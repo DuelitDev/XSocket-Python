@@ -1,13 +1,28 @@
 import typing
-import asyncio
 from abc import ABCMeta, abstractmethod
-from enum import IntEnum
+from address import *
+from ..protocol import ProtocolType
 
 
 __all__ = ["Handle"]
 
 
 class Handle(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def available(self) -> bool:
+        pass
+
+    @property
+    @abstractmethod
+    def connected(self) -> bool:
+        pass
+
+    @property
+    @abstractmethod
+    def closed(self) -> bool:
+        pass
+
     @property
     @abstractmethod
     def local_address(self) -> AddressInfo:
@@ -25,12 +40,7 @@ class Handle(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def is_running(self) -> bool:
-        pass
-
-    @property
-    @abstractmethod
-    def is_closed(self) -> bool:
+    def protocol_type(self) -> ProtocolType:
         pass
 
     @abstractmethod
@@ -44,43 +54,3 @@ class Handle(metaclass=ABCMeta):
     @abstractmethod
     def close(self) -> None:
         pass
-
-
-class IListener(ABC):
-    @abstractmethod
-    def __init__(self, *args, **kwargs) -> None:
-        pass
-
-    @property
-    @abstractmethod
-    def local_address(self) -> AddressInfo:
-        pass
-
-    @property
-    @abstractmethod
-    def is_closed(self) -> bool:
-        pass
-
-    @property
-    @abstractmethod
-    def is_running(self) -> bool:
-        pass
-
-    @abstractmethod
-    async def serve(self) -> None:
-
-    @abstractmethod
-    async def connect(self) -> IHandle:
-
-    @abstractmethod
-    async def accept(self) -> IHandle:
-
-    @abstractmethod
-    def close(self) -> None:
-
-
-class DataType(IntEnum):
-    Text = 0b00000001
-    Binary = 0b00000010
-    ConnectionClose = 0b00001000
-
