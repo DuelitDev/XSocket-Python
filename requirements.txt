@@ -1,0 +1,2 @@
+isinstancex~=1.0.0
+pifields~=1.0.0
