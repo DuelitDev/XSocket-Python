@@ -19,19 +19,16 @@ class Handle(metaclass=ABCMeta):
         self._closed: bool = False
 
     @property
-    @abstractmethod
     def available(self) -> bool:
-        pass
+        return self._available
 
     @property
-    @abstractmethod
     def connected(self) -> bool:
-        pass
+        return self._connected
 
     @property
-    @abstractmethod
     def closed(self) -> bool:
-        pass
+        return self._closed
 
     @property
     @abstractmethod

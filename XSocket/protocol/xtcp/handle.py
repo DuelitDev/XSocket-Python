@@ -1,33 +1,27 @@
 import typing
-
+import socket
 from .. import ProtocolType
-from ...base.address import AddressFamily, AddressInfo
+from ...base.address import *
 from ...base.handle import *
 
 
+__all__ = ["XTCPHandle"]
+
+
 class XTCPHandle(Handle):
-    def __init__(self) -> None:
-        pass
-
-    @property
-    def available(self) -> bool:
-        pass
-
-    @property
-    def connected(self) -> bool:
-        pass
-
-    @property
-    def closed(self) -> bool:
-        pass
+    def __init__(self, socket_: socket.socket) -> None:
+        super().__init__()
+        self._socket = socket_
 
     @property
     def local_address(self) -> AddressInfo:
-        pass
+        address, port = self._socket.getsockname()
+        return IPAddressInfo(address, port)
 
     @property
     def remote_address(self) -> AddressInfo:
-        pass
+        address, port = self._socket.getpeername()
+        return IPAddressInfo(address, port)
 
     @property
     def address_family(self) -> AddressFamily:
