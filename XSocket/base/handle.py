@@ -12,19 +12,8 @@ __all__ = ["Handle"]
 class Handle(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs) -> None:
         self._socket: socket.socket
-        self._protocol_type: ProtocolType
         self._event_loop: asyncio.BaseEventLoop
-        self._available: bool = False
-        self._connected: bool = False
         self._closed: bool = False
-
-    @property
-    def available(self) -> bool:
-        return self._available
-
-    @property
-    def connected(self) -> bool:
-        return self._connected
 
     @property
     def closed(self) -> bool:
@@ -48,6 +37,18 @@ class Handle(metaclass=ABCMeta):
     @property
     @abstractmethod
     def protocol_type(self) -> ProtocolType:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    async def pack(data: typing.Union[bytes, bytearray],
+                   *args, **kwargs) -> typing.List[bytearray]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    async def unpack(data: typing.Union[bytes, bytearray],
+                     *args, **kwargs) -> typing.List[bytearray]:
         pass
 
     @abstractmethod
