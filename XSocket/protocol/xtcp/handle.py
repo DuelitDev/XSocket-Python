@@ -7,7 +7,6 @@ from .. import ProtocolType
 from ...base.address import *
 from ...base.handle import *
 
-
 __all__ = ["XTCPHandle"]
 
 
@@ -66,12 +65,13 @@ class XTCPHandle(Handle):
 
     @staticmethod
     async def unpack(data: typing.Union[bytes, bytearray],
-                   opcode: OPCode = OPCode.Continuation,
-                   *args, **kwargs) -> typing.List[bytearray]:
+                     opcode: OPCode = OPCode.Continuation,
+                     *args, **kwargs) -> typing.List[bytearray]:
         pass
 
-    async def send(self, *args, **kwargs) -> None:
-        pass
+    async def send(self, data: typing.Union[bytes, bytearray]) -> None:
+        for packet in await self.pack(data, OPCode.Data):
+            await self._event_loop.sock_sendall(self._socket, packet)
 
     async def receive(self) -> typing.Any:
         pass
