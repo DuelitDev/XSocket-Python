@@ -1,11 +1,12 @@
 import asyncio
-import struct
+from struct import pack, unpack
 import typing
 import socket
 import enum
 from .. import ProtocolType
 from ...base.address import *
 from ...base.handle import *
+
 
 __all__ = ["XTCPHandle"]
 
@@ -42,35 +43,35 @@ class XTCPHandle(Handle):
     def protocol_type(self) -> ProtocolType:
         return ProtocolType.Xtcp
 
+# TODO: refactoring codes
     @staticmethod
-    async def pack(data: typing.Union[bytes, bytearray],
-                   opcode: OPCode = OPCode.Continuation,
-                   *args, **kwargs) -> typing.List[bytearray]:
-        fin, payload_length = 128, (125, 65535)
-        data = bytearray(data)
-        packets = []
-        if len(data) <= payload_length[0]:
+    def pack(data: typing.Union[bytes, bytearray],
+             opcode: OPCode = OPCode.Continuation,
+             *args, **kwargs) -> typing.List[bytearray]:
+        fin, con = 128, opcode.Continuation
+        if len(data) <= 125:
             header = bytearray([fin | opcode, len(data)])
-            packets.append(header + data)
-        elif len(data) <= payload_length[1]:
-            header = bytearray([fin | opcode, 126,
-                                *struct.pack("!H", len(data))])
-            packets.append(header + data)
+            yield header + data
+        elif len(data) <= 65535:
+            header = bytearray([fin | opcode, 126, *pack("!H", len(data))])
+            yield header + data
         else:
-            header = bytearray([fin | opcode, 126,
-                                *struct.pack("!H", payload_length[1])])
-            packets.append(header + data[:payload_length[1]])
-            packets.extend(await XTCPHandle.pack(data[payload_length[1]:]))
-        return packets
+            for index in range(0, len(data), 65535):
+                segment = data[index:index + 65535]
+                header = bytearray([
+                    opcode if not index else con,
+                    126, *pack("!H", len(segment))])
+                yield header + segment
+            yield bytearray([fin | con, 0])  # finish packet
 
     @staticmethod
-    async def unpack(data: typing.Union[bytes, bytearray],
+    def unpack(data: typing.Union[bytes, bytearray],
                      opcode: OPCode = OPCode.Continuation,
                      *args, **kwargs) -> typing.List[bytearray]:
         pass
 
     async def send(self, data: typing.Union[bytes, bytearray]) -> None:
-        for packet in await self.pack(data, OPCode.Data):
+        for packet in self.pack(data, OPCode.Data):
             await self._event_loop.sock_sendall(self._socket, packet)
 
     async def receive(self) -> typing.Any:

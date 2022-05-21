@@ -41,14 +41,14 @@ class Handle(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    async def pack(data: typing.Union[bytes, bytearray],
-                   *args, **kwargs) -> typing.List[bytearray]:
+    def pack(data: typing.Union[bytes, bytearray],
+             *args, **kwargs) -> typing.List[bytearray]:
         pass
 
     @staticmethod
     @abstractmethod
-    async def unpack(data: typing.Union[bytes, bytearray],
-                     *args, **kwargs) -> typing.List[bytearray]:
+    def unpack(data: typing.Union[bytes, bytearray],
+               *args, **kwargs) -> typing.List[bytearray]:
         pass
 
     @abstractmethod
