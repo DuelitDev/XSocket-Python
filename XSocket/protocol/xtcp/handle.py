@@ -47,17 +47,18 @@ class XTCPHandle(Handle):
     @staticmethod
     def pack(data: typing.Union[bytes, bytearray],
              opcode: OPCode = OPCode.Continuation,
-             *args, **kwargs) -> typing.List[bytearray]:
+             *args, **kwargs) -> typing.Generator[bytearray]:
         fin, con = 128, opcode.Continuation
-        if len(data) <= 125:
+        payload_length = (125, 65535)
+        if len(data) <= payload_length[0]:
             header = bytearray([fin | opcode, len(data)])
             yield header + data
-        elif len(data) <= 65535:
+        elif len(data) <= payload_length[1]:
             header = bytearray([fin | opcode, 126, *pack("!H", len(data))])
             yield header + data
         else:
-            for index in range(0, len(data), 65535):
-                segment = data[index:index + 65535]
+            for index in range(0, len(data), payload_length[1]):
+                segment = data[index:index + payload_length[1]]
                 header = bytearray([
                     opcode if not index else con,
                     126, *pack("!H", len(segment))])
@@ -65,9 +66,9 @@ class XTCPHandle(Handle):
             yield bytearray([fin | con, 0])  # finish packet
 
     @staticmethod
-    def unpack(data: typing.Union[bytes, bytearray],
-                     opcode: OPCode = OPCode.Continuation,
-                     *args, **kwargs) -> typing.List[bytearray]:
+    def unpack(packets: typing.List[typing.Union[bytes, bytearray]],
+               opcode: OPCode = OPCode.Continuation,
+               *args, **kwargs) -> typing.Generator[int, bool]:
         pass
 
     async def send(self, data: typing.Union[bytes, bytearray]) -> None:
