@@ -102,7 +102,7 @@ class XTCPHandle(Handle):
                 if not opcode:
                     opcode = packet[0]
                 if opcode == OPCode.Ping:
-                    await self.send(b"", OPCode.Pong)
+                    await self.send(packet[1], OPCode.Pong)
                 elif opcode == OPCode.Data:
                     packets.append(packet[1])
         return b"".join(packets)
