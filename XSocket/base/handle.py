@@ -2,8 +2,8 @@ import typing
 import socket
 import asyncio
 from abc import ABCMeta, abstractmethod
-from address import *
-from ..protocol import ProtocolType
+from XSocket.base.address import *
+from XSocket.protocol import ProtocolType
 
 
 __all__ = ["Handle"]

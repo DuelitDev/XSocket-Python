@@ -1,1 +1,1 @@
-from protocol import *
+from XSocket.protocol.protocol import *
