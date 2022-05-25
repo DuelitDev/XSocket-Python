@@ -41,14 +41,14 @@ class Handle(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def pack(data: typing.Union[bytes, bytearray],
+    def pack(data: bytearray,
              *args, **kwargs) -> typing.Generator[bytearray]:
         pass
 
     @staticmethod
     @abstractmethod
-    def unpack(packets: typing.List[typing.Union[bytes, bytearray]],
-               *args, **kwargs) -> typing.Generator[bytearray, bool]:
+    def unpack(packets: typing.List[bytearray],
+               *args, **kwargs) -> typing.Generator[typing.Any]:
         pass
 
     @abstractmethod
