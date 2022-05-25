@@ -43,7 +43,6 @@ class XTCPHandle(Handle):
     def protocol_type(self) -> ProtocolType:
         return ProtocolType.Xtcp
 
-    # TODO: refactoring codes
     @staticmethod
     def pack(data: bytearray, opcode: OPCode = OPCode.Continuation,
              *args, **kwargs) -> typing.Generator[bytearray]:
