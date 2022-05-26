@@ -3,9 +3,8 @@ import struct
 import typing
 import socket
 import enum
-from .. import ProtocolType
-from ...base.address import *
-from ...base.handle import *
+from XSocket.protocol import ProtocolType
+from XSocket.base import *
 
 
 __all__ = ["XTCPHandle"]
@@ -45,7 +44,7 @@ class XTCPHandle(Handle):
 
     @staticmethod
     def pack(data: bytearray, opcode: OPCode = OPCode.Continuation,
-             *args, **kwargs) -> typing.Generator[bytearray]:
+             *args, **kwargs) -> typing.Generator[bytearray, None, None]:
         fin, con = 128, opcode.Continuation
         payload_length = (125, 65535)
         if len(data) <= payload_length[0]:
@@ -67,7 +66,9 @@ class XTCPHandle(Handle):
 
     @staticmethod
     def unpack(packets: typing.List[bytearray], *args, **kwargs
-               ) -> typing.Generator[int, typing.Tuple[OPCode, bytearray]]:
+               ) -> typing.Generator[
+                        typing.Union[int, typing.Tuple[OPCode, bytearray]],
+                        None, None]:
         for packet in packets:
             payload_length = (125, 65535)
             yield 2
@@ -78,7 +79,7 @@ class XTCPHandle(Handle):
                 yield 2
                 size = struct.unpack("!H", *packet[2:])
             yield size
-            yield op, packet[2 + size <= payload_length[1] * 2:]
+            yield op, packet[2 + (size > payload_length[0] * 2):]
             if fin:
                 break
 

@@ -2,7 +2,7 @@ import typing
 import socket
 import asyncio
 from abc import ABCMeta, abstractmethod
-from XSocket.base.address import *
+from XSocket.base.net import *
 from XSocket.protocol import ProtocolType
 
 
@@ -42,13 +42,13 @@ class Handle(metaclass=ABCMeta):
     @staticmethod
     @abstractmethod
     def pack(data: bytearray,
-             *args, **kwargs) -> typing.Generator[bytearray]:
+             *args, **kwargs) -> typing.Generator[bytearray, None, None]:
         pass
 
     @staticmethod
     @abstractmethod
     def unpack(packets: typing.List[bytearray],
-               *args, **kwargs) -> typing.Generator[typing.Any]:
+               *args, **kwargs) -> typing.Generator[typing.Any, None, None]:
         pass
 
     @abstractmethod
