@@ -1,8 +1,8 @@
-import asyncio
-import struct
-import typing
-import socket
 import enum
+import struct
+import socket
+import asyncio
+from typing import Generator, Tuple, List, Union
 from XSocket.protocol import ProtocolType
 from XSocket.base import *
 
@@ -44,7 +44,7 @@ class XTCPHandle(Handle):
 
     @staticmethod
     def pack(data: bytearray, opcode: OPCode = OPCode.Continuation,
-             *args, **kwargs) -> typing.Generator[bytearray, None, None]:
+             *args, **kwargs) -> Generator[bytearray, None, None]:
         fin, con = 128, opcode.Continuation
         payload_length = (125, 65535)
         if len(data) <= payload_length[0]:
@@ -65,10 +65,8 @@ class XTCPHandle(Handle):
             yield bytearray([fin | con, 0])  # finish packet
 
     @staticmethod
-    def unpack(packets: typing.List[bytearray], *args, **kwargs
-               ) -> typing.Generator[
-                        typing.Union[int, typing.Tuple[OPCode, bytearray]],
-                        None, None]:
+    def unpack(packets: List[bytearray], *args, **kwargs
+               ) -> Generator[Union[int, Tuple[OPCode, bytearray]], None, None]:
         for packet in packets:
             payload_length = (125, 65535)
             yield 2
@@ -77,13 +75,13 @@ class XTCPHandle(Handle):
             size = 127 & packet[1]
             if size == payload_length[0] + 1:
                 yield 2
-                size = struct.unpack("!H", *packet[2:])
+                size = struct.unpack("!H", packet[2:])[0]
             yield size
-            yield op, packet[2 + (size > payload_length[0] * 2):]
+            yield op, packet[2 + (size > payload_length[0]) * 2:]
             if fin:
                 break
 
-    async def send(self, data: typing.Union[bytes, bytearray],
+    async def send(self, data: Union[bytes, bytearray],
                    opcode: OPCode = OPCode.Data) -> None:
         for packet in self.pack(bytearray(data), opcode):
             await self._event_loop.sock_sendall(self._socket, packet)
