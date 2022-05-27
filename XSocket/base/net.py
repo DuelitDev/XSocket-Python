@@ -1,6 +1,6 @@
 import ipaddress
 from enum import IntEnum
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from isinstancex import isinstancex
 from pifields import fields, FieldMeta
 
@@ -27,7 +27,11 @@ class AddressFamily(IntEnum):
     """Address for IP version 6."""
 
 
-class AddressInfo(ABC):
+class AddressInfoMeta(FieldMeta, ABCMeta):
+    pass
+
+
+class AddressInfo(metaclass=type("", (ABCMeta, FieldMeta), {})):
     """
     Identifies a network address.
     """
@@ -43,7 +47,7 @@ class AddressInfo(ABC):
         pass
 
 
-class IPAddressInfo(AddressInfo, FieldMeta):
+class IPAddressInfo(AddressInfo):
     """
     Represents a network endpoint as an IP address and a port number.
     """
