@@ -509,3 +509,60 @@
 #
 # That's all there is to it!
 
+
+import typing
+import socket
+import asyncio
+from abc import ABCMeta, abstractmethod
+from XSocket.base.net import *
+from XSocket.base.handle import *
+from XSocket.protocol import ProtocolType
+
+__all__ = ["Listener"]
+
+
+class Listener(metaclass=ABCMeta):
+    def __init__(self, *args, **kwargs) -> None:
+        self._socket: socket.socket
+        self._event_loop: asyncio.BaseEventLoop
+        self._running: bool = False
+        self._closed: bool = False
+
+    @property
+    def is_running(self) -> bool:
+        return self._running
+
+    @property
+    def closed(self) -> bool:
+        return self._closed
+
+    @property
+    @abstractmethod
+    def local_address(self) -> AddressInfo:
+        pass
+
+    @property
+    @abstractmethod
+    def address_family(self) -> AddressFamily:
+        pass
+
+    @property
+    @abstractmethod
+    def protocol_type(self) -> ProtocolType:
+        pass
+
+    @abstractmethod
+    async def run(self) -> None:
+        pass
+
+    @abstractmethod
+    async def connect(self) -> Handle:
+        pass
+
+    @abstractmethod
+    async def accept(self) -> Handle:
+        pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass
