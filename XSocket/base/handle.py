@@ -522,9 +522,9 @@ __all__ = ["Handle"]
 
 class Handle(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs) -> None:
-        self._socket: socket.socket
-        self._address: AddressInfo
-        self._event_loop: asyncio.BaseEventLoop
+        self._socket: typing.Union[socket.socket, None] = None
+        self._address: typing.Union[AddressInfo, None] = None
+        self._event_loop: typing.Union[asyncio.BaseEventLoop, None] = None
         self._closed: bool = False
 
     @property
