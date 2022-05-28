@@ -512,9 +512,7 @@
 
 from enum import Enum
 
-__all__ = [
-    "ProtocolType"
-]
+__all__ = ["ProtocolType"]
 
 
 class ProtocolType(Enum):
