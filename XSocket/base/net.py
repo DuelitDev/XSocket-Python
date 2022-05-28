@@ -535,7 +535,7 @@ class AddressFamily(IntEnum):
     """Unix local to host address."""
     InterNetwork = 2
     """Address for IP version 4."""
-    InterNetworkV6 = 23
+    InterNetworkV6 = 30
     """Address for IP version 6."""
 
 
