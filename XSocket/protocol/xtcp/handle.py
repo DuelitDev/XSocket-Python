@@ -533,17 +533,17 @@ class XTCPHandle(Handle):
     def __init__(self, socket_: socket.socket) -> None:
         super().__init__()
         self._socket = socket_
+        self._local_address = IPAddressInfo(*self._socket.getsockname())
+        self._remote_address = IPAddressInfo(*self._socket.getpeername())
         self._event_loop = asyncio.get_running_loop()
 
     @property
     def local_address(self) -> AddressInfo:
-        address, port = self._socket.getsockname()
-        return IPAddressInfo(address, port)
+        return self._local_address
 
     @property
     def remote_address(self) -> AddressInfo:
-        address, port = self._socket.getpeername()
-        return IPAddressInfo(address, port)
+        return self._remote_address
 
     @property
     def address_family(self) -> AddressFamily:

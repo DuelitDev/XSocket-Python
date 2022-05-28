@@ -523,6 +523,7 @@ __all__ = ["Handle"]
 class Handle(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs) -> None:
         self._socket: socket.socket
+        self._address: AddressInfo
         self._event_loop: asyncio.BaseEventLoop
         self._closed: bool = False
 
