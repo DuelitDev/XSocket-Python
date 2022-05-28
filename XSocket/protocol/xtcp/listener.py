@@ -508,3 +508,57 @@
 #   Ty Coon, President of Vice
 #
 # That's all there is to it!
+
+
+import socket
+import asyncio
+from XSocket.core.net import AddressFamily, AddressInfo, IPAddressInfo
+from XSocket.core.handle import Handle
+from XSocket.core.listener import Listener
+from XSocket.protocol.protocol import ProtocolType
+from XSocket.protocol.xtcp.handle import XTCPHandle
+
+__all__ = ["XTCPListener"]
+
+
+class XTCPListener(Listener):
+    def __init__(self, address: IPAddressInfo) -> None:
+        super().__init__()
+        self._address = address
+        self._event_loop = asyncio.get_running_loop()
+
+    @property
+    def local_address(self) -> AddressInfo:
+        return self._address
+
+    @property
+    def address_family(self) -> AddressFamily:
+        return self._address.address_family
+
+    @property
+    def protocol_type(self) -> ProtocolType:
+        return ProtocolType.Xtcp
+
+    async def run(self) -> None:
+        self._socket = socket.socket(
+            socket.AddressFamily(self._address.address_family),
+            socket.SOCK_STREAM)
+        self._socket.bind((self._address.address, self._address.port))
+        self._socket.listen()
+        self._running = True
+
+    async def connect(self) -> Handle:
+        sock = socket.socket(
+            socket.AddressFamily(self._address.address_family),
+            socket.SOCK_STREAM)
+        await self._event_loop.sock_connect(
+            sock, (self._address.address, self._address.port))
+        return XTCPHandle(sock)
+
+    async def accept(self) -> Handle:
+        pass
+
+    def close(self) -> None:
+        self._socket.close()
+        self._running = False
+        self._closed = True
