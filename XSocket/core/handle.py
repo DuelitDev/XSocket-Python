@@ -514,23 +514,18 @@ import typing
 import socket
 import asyncio
 from abc import ABCMeta, abstractmethod
-from XSocket.base.net import *
-from XSocket.base.handle import *
-from XSocket.protocol import ProtocolType
+from XSocket.core.net import AddressFamily, AddressInfo
+from XSocket.protocol.protocol import ProtocolType
 
-__all__ = ["Listener"]
+__all__ = ["Handle"]
 
 
-class Listener(metaclass=ABCMeta):
+class Handle(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs) -> None:
-        self._socket: socket.socket
-        self._event_loop: asyncio.BaseEventLoop
-        self._running: bool = False
+        self._socket: typing.Union[socket.socket, None] = None
+        self._address: typing.Union[AddressInfo, None] = None
+        self._event_loop: typing.Union[asyncio.BaseEventLoop, None] = None
         self._closed: bool = False
-
-    @property
-    def is_running(self) -> bool:
-        return self._running
 
     @property
     def closed(self) -> bool:
@@ -543,6 +538,11 @@ class Listener(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def remote_address(self) -> AddressInfo:
+        pass
+
+    @property
+    @abstractmethod
     def address_family(self) -> AddressFamily:
         pass
 
@@ -551,16 +551,24 @@ class Listener(metaclass=ABCMeta):
     def protocol_type(self) -> ProtocolType:
         pass
 
+    @staticmethod
     @abstractmethod
-    async def run(self) -> None:
+    def pack(data: bytearray,
+             *args, **kwargs) -> typing.Generator[bytearray, None, None]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def unpack(packets: typing.List[bytearray],
+               *args, **kwargs) -> typing.Generator[typing.Any, None, None]:
         pass
 
     @abstractmethod
-    async def connect(self) -> Handle:
+    async def send(self, *args, **kwargs) -> None:
         pass
 
     @abstractmethod
-    async def accept(self) -> Handle:
+    async def receive(self) -> typing.Any:
         pass
 
     @abstractmethod
