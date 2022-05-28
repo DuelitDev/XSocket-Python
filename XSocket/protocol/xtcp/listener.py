@@ -556,7 +556,8 @@ class XTCPListener(Listener):
         return XTCPHandle(sock)
 
     async def accept(self) -> Handle:
-        pass
+        sock, addr = await self._event_loop.sock_accept(self._socket)
+        return XTCPHandle(sock)
 
     def close(self) -> None:
         self._socket.close()
