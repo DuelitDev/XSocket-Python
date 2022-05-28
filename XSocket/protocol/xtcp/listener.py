@@ -538,7 +538,7 @@ class XTCPListener(Listener):
     def protocol_type(self) -> ProtocolType:
         return ProtocolType.Xtcp
 
-    async def run(self) -> None:
+    def run(self) -> None:
         self._socket = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
