@@ -510,7 +510,7 @@
 # That's all there is to it!
 
 
-from enum import IntEnum
+from enum import Enum
 
 
 __all__ = [
@@ -518,11 +518,11 @@ __all__ = [
 ]
 
 
-class ProtocolType(IntEnum):
+class ProtocolType(Enum):
     """
     Specifies the protocol scheme.
     """
-    Unspecified = 0
+    Unspecified = (0, 0)
     """Unspecified protocol."""
-    Xtcp = 1
+    Xtcp = (1, 1)
     """Extend TCP protocol."""
