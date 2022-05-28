@@ -515,7 +515,7 @@ import typing
 import struct
 import socket
 import asyncio
-from XSocket.core.net import AddressFamily, AddressInfo, IPAddressInfo
+from XSocket.core.net import AddressFamily, IPAddressInfo
 from XSocket.core.handle import Handle
 from XSocket.protocol import ProtocolType
 
@@ -539,11 +539,11 @@ class XTCPHandle(Handle):
         self._event_loop = asyncio.get_running_loop()
 
     @property
-    def local_address(self) -> AddressInfo:
+    def local_address(self) -> IPAddressInfo:
         return self._local_address
 
     @property
-    def remote_address(self) -> AddressInfo:
+    def remote_address(self) -> IPAddressInfo:
         return self._remote_address
 
     @property

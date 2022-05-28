@@ -512,8 +512,7 @@
 
 import socket
 import asyncio
-from XSocket.core.net import AddressFamily, AddressInfo, IPAddressInfo
-from XSocket.core.handle import Handle
+from XSocket.core.net import AddressFamily, IPAddressInfo
 from XSocket.core.listener import Listener
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.xtcp.handle import XTCPHandle
@@ -528,7 +527,7 @@ class XTCPListener(Listener):
         self._event_loop = asyncio.get_running_loop()
 
     @property
-    def local_address(self) -> AddressInfo:
+    def local_address(self) -> IPAddressInfo:
         return self._address
 
     @property
@@ -547,7 +546,7 @@ class XTCPListener(Listener):
         self._socket.listen()
         self._running = True
 
-    async def connect(self) -> Handle:
+    async def connect(self) -> XTCPHandle:
         sock = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
@@ -555,7 +554,7 @@ class XTCPListener(Listener):
             sock, (self._address.address, self._address.port))
         return XTCPHandle(sock)
 
-    async def accept(self) -> Handle:
+    async def accept(self) -> XTCPHandle:
         sock, addr = await self._event_loop.sock_accept(self._socket)
         return XTCPHandle(sock)
 
