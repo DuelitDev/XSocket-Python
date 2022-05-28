@@ -616,6 +616,7 @@ class XTCPHandle(Handle):
                     await self.send(packet[1], OPCode.Pong)
                 elif opcode == OPCode.Data:
                     packets.append(packet[1])
+                temp.append(bytearray())
         return b"".join(packets)
 
     def close(self) -> None:
