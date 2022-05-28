@@ -511,12 +511,13 @@
 
 
 import enum
+import typing
 import struct
 import socket
 import asyncio
-from typing import Generator, Tuple, List, Union
+from XSocket.core.net import AddressFamily, AddressInfo, IPAddressInfo
+from XSocket.core.handle import Handle
 from XSocket.protocol import ProtocolType
-from XSocket.base import *
 
 __all__ = ["XTCPHandle"]
 
@@ -547,7 +548,7 @@ class XTCPHandle(Handle):
 
     @property
     def address_family(self) -> AddressFamily:
-        return self.local_address.address_family
+        return self._local_address.address_family
 
     @property
     def protocol_type(self) -> ProtocolType:
@@ -555,7 +556,7 @@ class XTCPHandle(Handle):
 
     @staticmethod
     def pack(data: bytearray, opcode: OPCode = OPCode.Continuation,
-             *args, **kwargs) -> Generator[bytearray, None, None]:
+             *args, **kwargs) -> typing.Generator[bytearray, None, None]:
         fin, con = 128, opcode.Continuation
         payload_length = (125, 65535)
         if len(data) <= payload_length[0]:
@@ -576,8 +577,8 @@ class XTCPHandle(Handle):
             yield bytearray([fin | con, 0])  # finish packet
 
     @staticmethod
-    def unpack(packets: List[bytearray], *args, **kwargs
-               ) -> Generator[Union[int, Tuple[OPCode, bytearray]], None, None]:
+    def unpack(packets: typing.List[bytearray], *args, **kwargs
+               ) -> typing.Generator[typing.Union[int, tuple], None, None]:
         for packet in packets:
             payload_length = (125, 65535)
             yield 2
@@ -592,7 +593,7 @@ class XTCPHandle(Handle):
             if fin:
                 break
 
-    async def send(self, data: Union[bytes, bytearray],
+    async def send(self, data: typing.Union[bytes, bytearray],
                    opcode: OPCode = OPCode.Data) -> None:
         for packet in self.pack(bytearray(data), opcode):
             await self._event_loop.sock_sendall(self._socket, packet)
