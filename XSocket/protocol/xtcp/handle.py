@@ -604,9 +604,9 @@ class XTCPHandle(Handle):
         temp = [bytearray()]
         for packet in self.unpack(temp):
             if isinstance(packet, int):
-                recv = []
+                recv = bytearray()
                 while len(recv) != packet:
-                    recv = await self._event_loop.sock_recv(
+                    recv += await self._event_loop.sock_recv(
                         self._socket, packet - len(recv))
                 temp[-1].extend(recv)
             elif isinstance(packet, tuple):
