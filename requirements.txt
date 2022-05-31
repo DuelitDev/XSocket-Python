@@ -1,2 +1,3 @@
 isinstancex~=1.0.0
 pifields~=1.1.0
+pipcevent~=1.1.0
