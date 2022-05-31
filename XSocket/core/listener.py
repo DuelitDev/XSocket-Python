@@ -553,7 +553,7 @@ class Listener(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def run(self) -> None:
+    def run(self) -> None:
         pass
 
     @abstractmethod
