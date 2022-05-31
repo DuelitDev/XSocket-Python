@@ -557,6 +557,15 @@ class AddressInfo(metaclass=type("", (ABCMeta, FieldMeta), {})):
         """
         pass
 
+    @abstractmethod
+    def __hash__(self) -> int:
+        """
+        Returns a hash code for the current object.
+
+        :return: hash code
+        """
+        pass
+
 
 class IPAddressInfo(AddressInfo):
     """
@@ -637,3 +646,11 @@ class IPAddressInfo(AddressInfo):
         isinstancex(value, int)
         assert 0 <= value <= 65535, "The port must be between 0 and 65535."
         self._port = value
+
+    def __hash__(self) -> int:
+        """
+        Returns a hash code for the current object.
+
+        :return: hash code
+        """
+        return hash((self._address, self._port))
