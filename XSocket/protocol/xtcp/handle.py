@@ -608,7 +608,7 @@ class XTCPHandle(Handle):
                 while len(recv) != packet:
                     recv += await self._event_loop.sock_recv(
                         self._socket, packet - len(recv))
-                temp[-1].extend(recv)
+                temp[0].extend(recv)
             elif isinstance(packet, tuple):
                 if not opcode:
                     opcode = packet[0]
@@ -616,7 +616,7 @@ class XTCPHandle(Handle):
                     await self.send(packet[1], OPCode.Pong)
                 elif opcode == OPCode.Data:
                     packets.append(packet[1])
-                temp.append(bytearray())
+                temp[0] = bytearray()
         return b"".join(packets)
 
     def close(self) -> None:
