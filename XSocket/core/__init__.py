@@ -510,6 +510,6 @@
 # That's all there is to it!
 
 
-from XSocket.core.net import *
-from XSocket.core.handle import *
-from XSocket.core.listener import *
+from XSocket.core.net import AddressFamily, AddressInfo, IPAddressInfo
+from XSocket.core.handle import Handle
+from XSocket.core.listener import Listener
