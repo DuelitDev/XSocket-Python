@@ -538,10 +538,6 @@ class AddressFamily(IntEnum):
     """Address for IP version 6."""
 
 
-class AddressInfoMeta(FieldMeta, ABCMeta):
-    pass
-
-
 class AddressInfo(metaclass=type("", (ABCMeta, FieldMeta), {})):
     """
     Identifies a network address.
