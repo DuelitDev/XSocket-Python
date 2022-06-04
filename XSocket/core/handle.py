@@ -574,7 +574,7 @@ class Handle(metaclass=ABCMeta):
     @abstractmethod
     def protocol_type(self) -> ProtocolType:
         """
-        Gets the protocol type of the Socket.
+        Gets the protocol type of the Handle.
 
         :return: ProtocolType
         """
