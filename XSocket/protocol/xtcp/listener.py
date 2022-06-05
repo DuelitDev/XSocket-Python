@@ -521,24 +521,50 @@ __all__ = ["XTCPListener"]
 
 
 class XTCPListener(Listener):
+    """
+    Listens for connections from TCP network clients.
+    """
     def __init__(self, address: IPAddressInfo) -> None:
+        """
+        Listens for connections from TCP network clients.
+
+        :param address: Local address
+        """
         super().__init__()
         self._address = address
         self._event_loop = asyncio.get_running_loop()
 
     @property
     def local_address(self) -> IPAddressInfo:
+        """
+        Gets the local endpoint.
+
+        :return: AddressInfo
+        """
         return self._address
 
     @property
     def address_family(self) -> AddressFamily:
+        """
+        Gets the address family of the Socket.
+
+        :return: AddressFamily
+        """
         return self._address.address_family
 
     @property
     def protocol_type(self) -> ProtocolType:
+        """
+        Gets the protocol type of the Socket.
+
+        :return: ProtocolType
+        """
         return ProtocolType.Xtcp
 
     def run(self) -> None:
+        """
+        Starts listening for incoming connection requests.
+        """
         self._socket = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
@@ -547,6 +573,11 @@ class XTCPListener(Listener):
         self._running = True
 
     async def connect(self) -> XTCPHandle:
+        """
+        Establishes a connection to a remote host.
+
+        :return: XTCPHandle
+        """
         sock = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
@@ -555,10 +586,18 @@ class XTCPListener(Listener):
         return XTCPHandle(sock)
 
     async def accept(self) -> XTCPHandle:
+        """
+        Creates a new XTCPHandle for a newly created connection.
+
+        :return: XTCPHandle
+        """
         sock, addr = await self._event_loop.sock_accept(self._socket)
         return XTCPHandle(sock)
 
     def close(self) -> None:
+        """
+        Closes the listener.
+        """
         self._socket.close()
         self._running = False
         self._closed = True
