@@ -588,7 +588,7 @@ class Handle(metaclass=ABCMeta):
         Generates a packet to be transmitted.
 
         :param data: Data to send
-        :return: Packet with generator
+        :return: Packet generator
         """
         pass
 
