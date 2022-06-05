@@ -523,6 +523,9 @@ __all__ = ["XTCPHandle"]
 
 
 class OPCode(enum.IntEnum):
+    """
+    Specifies the data type.
+    """
     Continuation = 0x0
     Data = 0x2
     ConnectionClose = 0x8
@@ -531,7 +534,15 @@ class OPCode(enum.IntEnum):
 
 
 class XTCPHandle(Handle):
+    """
+    Provides client connections for TCP network services.
+    """
     def __init__(self, socket_: socket.socket) -> None:
+        """
+        Provides client connections for TCP network services.
+
+        :param socket_: Socket to handle
+        """
         super().__init__()
         self._socket = socket_
         self._local_address = IPAddressInfo(*self._socket.getsockname())
@@ -540,23 +551,50 @@ class XTCPHandle(Handle):
 
     @property
     def local_address(self) -> IPAddressInfo:
+        """
+        Gets the local ip endpoint.
+
+        :return: IPAddressInfo
+        """
         return self._local_address
 
     @property
     def remote_address(self) -> IPAddressInfo:
+        """
+        Gets the remote ip endpoint.
+
+        :return: IPAddressInfo
+        """
         return self._remote_address
 
     @property
     def address_family(self) -> AddressFamily:
+        """
+        Gets the address family of the Socket.
+
+        :return: AddressFamily
+        """
         return self._local_address.address_family
 
     @property
     def protocol_type(self) -> ProtocolType:
+        """
+        Gets the protocol type of the Handle.
+
+        :return: ProtocolType
+        """
         return ProtocolType.Xtcp
 
     @staticmethod
-    def pack(data: bytearray, opcode: OPCode = OPCode.Continuation,
+    def pack(data: bytearray, opcode: OPCode = OPCode.Data,
              *args, **kwargs) -> typing.Generator[bytearray, None, None]:
+        """
+        Generates a packet to be transmitted.
+
+        :param data: Data to send
+        :param opcode: Data type
+        :return: Packet generator
+        """
         fin, con = 128, opcode.Continuation
         payload_length = (125, 65535)
         if len(data) <= payload_length[0]:
@@ -579,6 +617,18 @@ class XTCPHandle(Handle):
     @staticmethod
     def unpack(packets: typing.List[bytearray], *args, **kwargs
                ) -> typing.Generator[typing.Union[int, tuple], None, None]:
+        """
+        Read the header of the received packet and get the data.
+
+        If generator yields an integer, It must receive an integer size of data
+        from the socket and append it to the bytearray of the list.
+
+        If generator yields a tuple, It must empty the bytearray of the list.
+        Also, tuple contains OPCode and data.
+
+        :param packets: Received packet, bytearray in list must be empty.
+        :return: See docstring
+        """
         for packet in packets:
             payload_length = (125, 65535)
             yield 2
@@ -595,10 +645,22 @@ class XTCPHandle(Handle):
 
     async def send(self, data: typing.Union[bytes, bytearray],
                    opcode: OPCode = OPCode.Data) -> None:
+        """
+        Sends data to a connected Socket.
+
+        :param data:
+        :param opcode:
+        :return:
+        """
         for packet in self.pack(bytearray(data), opcode):
             await self._event_loop.sock_sendall(self._socket, packet)
 
     async def receive(self) -> bytes:
+        """
+        Receives data from a bound Socket.
+
+        :return: Received data
+        """
         packets = []
         opcode = None
         temp = [bytearray()]
@@ -616,9 +678,12 @@ class XTCPHandle(Handle):
                     await self.send(packet[1], OPCode.Pong)
                 elif opcode == OPCode.Data:
                     packets.append(packet[1])
-                temp[0] = bytearray()
+                temp[0].clear()
         return b"".join(packets)
 
     def close(self) -> None:
+        """
+        Closes the Socket connection.
+        """
         self._socket.close()
         self._closed = True
