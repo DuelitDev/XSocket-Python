@@ -529,8 +529,6 @@ class OPCode(enum.IntEnum):
     Continuation = 0x0
     Data = 0x2
     ConnectionClose = 0x8
-    Ping = 0x9
-    Pong = 0xA
 
 
 class XTCPHandle(Handle):
@@ -671,14 +669,16 @@ class XTCPHandle(Handle):
                     recv += await self._event_loop.sock_recv(
                         self._socket, packet - len(recv))
                 temp[0].extend(recv)
-            elif isinstance(packet, tuple):
-                if not opcode:
-                    opcode = packet[0]
-                if opcode == OPCode.Ping:
-                    await self.send(packet[1], OPCode.Pong)
-                elif opcode == OPCode.Data:
-                    packets.append(packet[1])
-                temp[0].clear()
+                continue
+            if not opcode:
+                opcode = packet[0]
+            if opcode == OPCode.ConnectionClose:
+                raise ConnectionAbortedError("Connection was aborted by peer.")
+            elif opcode == OPCode.Continuation:
+                raise ConnectionResetError("Connection was reset by peer.")
+            elif opcode == OPCode.Data:
+                packets.append(packet[1])
+            temp[0].clear()
         return b"".join(packets)
 
     def close(self) -> None:
