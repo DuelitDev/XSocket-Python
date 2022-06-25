@@ -514,7 +514,7 @@ import ipaddress
 from enum import IntEnum
 from abc import ABCMeta, abstractmethod
 from isinstancex import isinstancex
-from pifields import fields, FieldMeta
+from pyfieldlib import fields, FieldMeta
 
 __all__ = [
     "AddressFamily",
@@ -618,8 +618,10 @@ class IPAddressInfo(AddressInfo):
         :return: AddressFamily
         """
         address = ipaddress.ip_address(self._address)
-        return AddressFamily.InterNetwork if address.version == 4 \
-            else AddressFamily.InterNetworkV6
+        if address.version == 4:
+            return AddressFamily.InterNetwork
+        else:
+            return AddressFamily.InterNetworkV6
 
     @address.setter
     def address(self, value: str) -> None:
