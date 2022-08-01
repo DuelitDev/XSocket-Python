@@ -536,7 +536,6 @@ class Server:
         self._listener: Listener = listener
         self._handles: typing.Dict[int, Handle] = {}
         self._thread: typing.Union[threading.Thread, None] = None
-        self._loop: typing.Union[asyncio.BaseEventLoop, None] = None
         self._queue: queue.Queue[asyncio.Task] = queue.Queue()
         self._wrapper_lock: asyncio.locks.Lock = asyncio.Lock()
         self._collector_lock: asyncio.locks.Lock = asyncio.Lock()
@@ -550,10 +549,10 @@ class Server:
 
     def run(self) -> None:
         def _run():
-            self._loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self._loop)
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             self._listener.run()
-            self._loop.run_until_complete(self._wrapper())
+            loop.run_until_complete(self._wrapper())
 
         self._thread = threading.Thread(target=_run, daemon=True)
         self._thread.start()
@@ -572,11 +571,6 @@ class Server:
             asyncio.ensure_future(self._handler(cid))
         await self._on_close(self)
 
-    async def _dispatcher(self) -> None:
-        while not self._closed:
-            task = await self._queue.get()
-            await task
-
     async def _handler(self, cid: int) -> None:
         handle = self._handles[cid]
         await self._on_connect(self, cid)
@@ -593,6 +587,11 @@ class Server:
                 break
         self.disconnect(cid)
         await self._on_disconnect(self, cid)
+
+    async def _dispatcher(self) -> None:
+        while not self._closed:
+            task = await self._queue.get()
+            await task
 
     async def _send(self, cid: int, *args, **kwargs) -> None:
         await self._handles[cid].send(*args, **kwargs)
