@@ -536,7 +536,7 @@ class Server:
         self._listener: Listener = listener
         self._handles: typing.Dict[int, Handle] = {}
         self._thread: typing.Union[threading.Thread, None] = None
-        self._queue: queue.Queue[asyncio.Task] = queue.Queue()
+        self._queue: queue.Queue[typing.Coroutine] = queue.Queue()
         self._wrapper_lock: asyncio.locks.Lock = asyncio.Lock()
         self._collector_lock: asyncio.locks.Lock = asyncio.Lock()
         self._closed: bool = False
@@ -591,8 +591,7 @@ class Server:
     async def _dispatcher(self) -> None:
         while not self._closed:
             try:
-                task = await self._queue.get()
-                await task
+                await (await self._queue.get())
             except Exception as e:
                 await self._on_error(self, e)
 
@@ -600,8 +599,7 @@ class Server:
         await self._handles[cid].send(*args, **kwargs)
 
     def send(self, cid: int, *args, **kwargs) -> None:
-        task = asyncio.create_task(self._send(cid, *args, **kwargs))
-        self._queue.put(task)
+        self._queue.put(self._send(cid, *args, **kwargs))
 
     def broadcast(self, *args, **kwargs) -> None:
         for cid in self._handles:
@@ -613,8 +611,7 @@ class Server:
             del self._handles[cid]
 
     def disconnect(self, cid: int) -> None:
-        task = asyncio.create_task(self._disconnect(cid))
-        self._queue.put(task)
+        self._queue.put(self._disconnect(cid))
 
     @property
     def event(self) -> ServerEventHandler:

@@ -533,7 +533,7 @@ class Client:
         self._listener: Listener = listener
         self._handle: typing.Union[Handle, None] = None
         self._thread: typing.Union[threading.Thread, None] = None
-        self._queue: queue.Queue[asyncio.Task] = queue.Queue()
+        self._queue: queue.Queue[typing.Coroutine] = queue.Queue()
         self._closed: bool = False
         self._on_open: EventHandler = EventHandler()
         self._on_close: EventHandler = EventHandler()
@@ -544,7 +544,6 @@ class Client:
         def _run():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            self._handle = self._listener.connect()
             loop.run_until_complete(self._handler())
         self._thread = threading.Thread(target=_run, daemon=True)
         self._thread.start()
@@ -554,6 +553,7 @@ class Client:
         self._thread.join()
 
     async def _handler(self) -> None:
+        self._handle = await self._listener.connect()
         await self._on_open(self)
         while not self._closed and not self._handle.closed:
             try:
@@ -578,15 +578,13 @@ class Client:
         await self._handle.send(*args, **kwargs)
 
     def send(self, *args, **kwargs) -> None:
-        task = asyncio.create_task(self._send(*args, **kwargs))
-        self._queue.put(task)
+        self._queue.put(self._send(*args, **kwargs))
 
     async def _disconnect(self) -> None:
         await self._handle.close()
 
     def disconnect(self) -> None:
-        task = asyncio.create_task(self._disconnect())
-        self._queue.put(task)
+        self._queue.put(self._disconnect())
 
     @property
     def event(self) -> ClientEventHandler:
