@@ -577,7 +577,7 @@ class Server:
         while not self._closed and not handle.closed:
             try:
                 data = await handle.receive()
-                await self._on_message(self, data)
+                await self._on_message(self, cid, data)
             except ConnectionAbortedError:
                 break
             except ConnectionResetError:
