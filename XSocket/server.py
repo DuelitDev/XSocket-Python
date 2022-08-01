@@ -590,8 +590,11 @@ class Server:
 
     async def _dispatcher(self) -> None:
         while not self._closed:
-            task = await self._queue.get()
-            await task
+            try:
+                task = await self._queue.get()
+                await task
+            except Exception as e:
+                await self._on_error(self, e)
 
     async def _send(self, cid: int, *args, **kwargs) -> None:
         await self._handles[cid].send(*args, **kwargs)
