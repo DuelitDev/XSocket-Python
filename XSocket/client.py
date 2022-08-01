@@ -511,6 +511,7 @@
 
 
 import typing
+import queue
 import asyncio
 import threading
 from pyeventlib import EventHandler
@@ -518,11 +519,21 @@ from XSocket.core.handle import Handle
 from XSocket.core.listener import Listener
 
 
+class ClientEventHandler:
+    def __init__(self, on_open: EventHandler, on_close: EventHandler,
+                 on_message: EventHandler, on_error: EventHandler):
+        self.on_open: EventHandler = on_open
+        self.on_close: EventHandler = on_close
+        self.on_message: EventHandler = on_message
+        self.on_error: EventHandler = on_error
+
+
 class Client:
     def __init__(self, listener: Listener):
         self._listener: Listener = listener
         self._handle: typing.Union[Handle, None] = None
         self._thread: typing.Union[threading.Thread, None] = None
+        self._queue: queue.Queue[asyncio.Task] = queue.Queue()
         self._closed: bool = False
         self._on_open: EventHandler = EventHandler()
         self._on_close: EventHandler = EventHandler()
@@ -533,7 +544,7 @@ class Client:
         def _run():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            self._handle = loop.run_until_complete(self._listener.connect())
+            self._handle = self._listener.connect()
             loop.run_until_complete(self._handler())
         self._thread = threading.Thread(target=_run, daemon=True)
         self._thread.start()
@@ -542,15 +553,42 @@ class Client:
         self._closed = True
         self._thread.join()
 
-    @property
-    def event(self) -> object:
-        attr = {
-            "on_open": self._on_open,
-            "on_close": self._on_close,
-            "on_message": self._on_message,
-            "on_error": self._on_error
-        }
-        return type("ClientEventHandler", (), attr)
-
     async def _handler(self) -> None:
         await self._on_open(self)
+        while not self._closed and not self._handle.closed:
+            try:
+                data = await self._handle.receive()
+                await self._on_message(self, data)
+            except ConnectionAbortedError:
+                break
+            except ConnectionResetError:
+                break
+            except Exception as e:
+                await self._on_error(self, e)
+                break
+        self.disconnect()
+        await self._on_close(self)
+
+    async def _dispatcher(self) -> None:
+        while not self._closed:
+            task = await self._queue.get()
+            await task
+
+    async def _send(self, *args, **kwargs) -> None:
+        await self._handle.send(*args, **kwargs)
+
+    def send(self, *args, **kwargs) -> None:
+        task = asyncio.create_task(self._send(*args, **kwargs))
+        self._queue.put(task)
+
+    async def _disconnect(self) -> None:
+        await self._handle.close()
+
+    def disconnect(self) -> None:
+        task = asyncio.create_task(self._disconnect())
+        self._queue.put(task)
+
+    @property
+    def event(self) -> ClientEventHandler:
+        return ClientEventHandler(self._on_open, self._on_close,
+                                  self._on_message, self._on_error)
