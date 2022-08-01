@@ -508,3 +508,114 @@
 #   Ty Coon, President of Vice
 #
 # That's all there is to it!
+
+
+import typing
+import queue
+import asyncio
+import threading
+from pyeventlib import EventHandler
+from XSocket.core.handle import Handle
+from XSocket.core.listener import Listener
+
+
+class ServerEventHandler:
+    def __init__(self, on_open: EventHandler, on_close: EventHandler,
+                 on_connect: EventHandler, on_disconnect: EventHandler,
+                 on_message: EventHandler, on_error: EventHandler):
+        self.on_open: EventHandler = on_open
+        self.on_close: EventHandler = on_close
+        self.on_connect: EventHandler = on_connect
+        self.on_disconnect: EventHandler = on_disconnect
+        self.on_message: EventHandler = on_message
+        self.on_error: EventHandler = on_error
+
+
+class Server:
+    def __init__(self, listener: Listener):
+        self._listener: Listener = listener
+        self._handles: typing.Dict[int, Handle] = {}
+        self._thread: typing.Union[threading.Thread, None] = None
+        self._loop: typing.Union[asyncio.BaseEventLoop, None] = None
+        self._queue: queue.Queue[asyncio.Task] = queue.Queue()
+        self._wrapper_lock: asyncio.locks.Lock = asyncio.Lock()
+        self._collector_lock: asyncio.locks.Lock = asyncio.Lock()
+        self._closed: bool = False
+        self._on_open: EventHandler = EventHandler()
+        self._on_close: EventHandler = EventHandler()
+        self._on_connect: EventHandler = EventHandler()
+        self._on_disconnect: EventHandler = EventHandler()
+        self._on_message: EventHandler = EventHandler()
+        self._on_error: EventHandler = EventHandler()
+
+    def run(self) -> None:
+        def _run():
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+            self._listener.run()
+            self._loop.run_until_complete(self._wrapper())
+
+        self._thread = threading.Thread(target=_run, daemon=True)
+        self._thread.start()
+
+    def close(self) -> None:
+        self._closed = True
+        self._thread.join()
+
+    async def _wrapper(self) -> None:
+        await self._on_open(self)
+        while not self._closed:
+            handle = await self._listener.accept()
+            cid = hash(handle)
+            async with self._wrapper_lock:
+                self._handles[cid] = handle
+            asyncio.ensure_future(self._handler(cid))
+        await self._on_close(self)
+
+    async def _dispatcher(self) -> None:
+        while not self._closed:
+            task = await self._queue.get()
+            await task
+
+    async def _handler(self, cid: int) -> None:
+        handle = self._handles[cid]
+        await self._on_connect(self, cid)
+        while not self._closed and not handle.closed:
+            try:
+                data = await handle.receive()
+                await self._on_message(self, data)
+            except ConnectionAbortedError:
+                break
+            except ConnectionResetError:
+                break
+            except Exception as e:
+                await self._on_error(self, e)
+                break
+        self.disconnect(cid)
+        await self._on_disconnect(self, cid)
+
+    async def _send(self, cid: int, *args, **kwargs) -> None:
+        await self._handles[cid].send(*args, **kwargs)
+
+    def send(self, cid: int, *args, **kwargs) -> None:
+        task = asyncio.create_task(self._send(cid, *args, **kwargs))
+        self._queue.put(task)
+
+    def broadcast(self, *args, **kwargs) -> None:
+        for cid in self._handles:
+            self.send(cid, *args, **kwargs)
+
+    async def _disconnect(self, cid: int) -> None:
+        async with self._collector_lock:
+            await self._handles[cid].close()
+            del self._handles[cid]
+
+    def disconnect(self, cid: int) -> None:
+        task = asyncio.create_task(self._disconnect(cid))
+        self._queue.put(task)
+
+    @property
+    def event(self) -> ServerEventHandler:
+        return ServerEventHandler(self._on_open, self._on_close,
+                                  self._on_connect, self._on_disconnect,
+                                  self._on_message, self._on_error)

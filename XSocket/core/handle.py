@@ -621,7 +621,7 @@ class Handle(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def close(self) -> None:
+    async def close(self) -> None:
         """
         Closes the Socket connection.
         """

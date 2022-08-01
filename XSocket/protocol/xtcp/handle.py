@@ -584,8 +584,8 @@ class XTCPHandle(Handle):
         return ProtocolType.Xtcp
 
     @staticmethod
-    def pack(data: bytearray, opcode: OPCode = OPCode.Data,
-             *args, **kwargs) -> typing.Generator[bytearray, None, None]:
+    def pack(data: bytearray, opcode: OPCode = OPCode.Data, *args, **kwargs
+             ) -> typing.Generator[bytearray, None, None]:
         """
         Generates a packet to be transmitted.
 
@@ -594,20 +594,19 @@ class XTCPHandle(Handle):
         :return: Packet generator
         """
         fin, con = 128, opcode.Continuation
-        payload_length = (125, 65535)
-        if len(data) <= payload_length[0]:
+        if len(data) <= 125:
             header = bytearray([fin | opcode, len(data)])
             yield header + data
-        elif len(data) <= payload_length[1]:
+        elif len(data) <= 65535:
             header = bytearray([
-                fin | opcode, payload_length[0] + 1,
+                fin | opcode, 126,
                 *struct.pack("!H", len(data))])
             yield header + data
         else:
-            for index in range(0, len(data), payload_length[1]):
-                segment = data[index:index + payload_length[1]]
+            for index in range(0, len(data), 65535):
+                segment = data[index:index + 65535]
                 header = bytearray([
-                    opcode if not index else con, payload_length[0] + 1,
+                    opcode if not index else con, 126,
                     *struct.pack("!H", len(segment))])
                 yield header + segment
             yield bytearray([fin | con, 0])  # finish packet
@@ -628,16 +627,18 @@ class XTCPHandle(Handle):
         :return: See docstring
         """
         for packet in packets:
-            payload_length = (125, 65535)
             yield 2
-            fin = (255 & packet[0]) >> 7
-            op = OPCode(15 & packet[0])
+            fin = packet[0] >> 7
+            rsv = ((127 & packet[0]) >> 4) + (packet[1] >> 7)
+            opcode = OPCode(15 & packet[0])
             size = 127 & packet[1]
-            if size == payload_length[0] + 1:
+            if rsv != 0:
+                raise ValueError("header is invalid.")
+            if size == 125 + 1:
                 yield 2
                 size = struct.unpack("!H", packet[2:])[0]
             yield size
-            yield op, packet[2 + (size > payload_length[0]) * 2:]
+            yield opcode, packet[2 + (size > 125) * 2:]
             if fin:
                 break
 
@@ -672,18 +673,25 @@ class XTCPHandle(Handle):
                 continue
             if not opcode:
                 opcode = packet[0]
-            if opcode == OPCode.ConnectionClose:
-                raise ConnectionAbortedError("Connection was aborted by peer.")
+            if opcode == OPCode.ConnectionClose or self._closed:
+                if self._closed and opcode == OPCode.ConnectionClose:
+                    await self._close(True)
+                    raise ConnectionAbortedError(
+                        "Connection was aborted by peer.")
+                await self._close(False)
             elif opcode == OPCode.Continuation:
                 raise ConnectionResetError("Connection was reset by peer.")
             elif opcode == OPCode.Data:
                 packets.append(packet[1])
+                self._closed = False
             temp[0].clear()
         return b"".join(packets)
 
-    def close(self) -> None:
-        """
-        Closes the Socket connection.
-        """
-        self._socket.close()
+    async def close(self) -> None:
+        await self._close(_close_socket=False)
+
+    async def _close(self, _close_socket: bool) -> None:
+        if _close_socket:
+            return self._socket.close()
+        await self.send(b"", OPCode.ConnectionClose)
         self._closed = True

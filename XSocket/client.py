@@ -508,3 +508,49 @@
 #   Ty Coon, President of Vice
 #
 # That's all there is to it!
+
+
+import typing
+import asyncio
+import threading
+from pyeventlib import EventHandler
+from XSocket.core.handle import Handle
+from XSocket.core.listener import Listener
+
+
+class Client:
+    def __init__(self, listener: Listener):
+        self._listener: Listener = listener
+        self._handle: typing.Union[Handle, None] = None
+        self._thread: typing.Union[threading.Thread, None] = None
+        self._closed: bool = False
+        self._on_open: EventHandler = EventHandler()
+        self._on_close: EventHandler = EventHandler()
+        self._on_message: EventHandler = EventHandler()
+        self._on_error: EventHandler = EventHandler()
+
+    def run(self) -> None:
+        def _run():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            self._handle = loop.run_until_complete(self._listener.connect())
+            loop.run_until_complete(self._handler())
+        self._thread = threading.Thread(target=_run, daemon=True)
+        self._thread.start()
+
+    def close(self) -> None:
+        self._closed = True
+        self._thread.join()
+
+    @property
+    def event(self) -> object:
+        attr = {
+            "on_open": self._on_open,
+            "on_close": self._on_close,
+            "on_message": self._on_message,
+            "on_error": self._on_error
+        }
+        return type("ClientEventHandler", (), attr)
+
+    async def _handler(self) -> None:
+        await self._on_open(self)

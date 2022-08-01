@@ -532,7 +532,6 @@ class XTCPListener(Listener):
         """
         super().__init__()
         self._address = address
-        self._event_loop = asyncio.get_running_loop()
 
     @property
     def local_address(self) -> IPAddressInfo:
@@ -565,6 +564,7 @@ class XTCPListener(Listener):
         """
         Starts listening for incoming connection requests.
         """
+        self._event_loop = asyncio.get_event_loop()
         self._socket = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
@@ -578,6 +578,7 @@ class XTCPListener(Listener):
 
         :return: XTCPHandle
         """
+        self._event_loop = asyncio.get_event_loop()
         sock = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
