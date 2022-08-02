@@ -633,13 +633,14 @@ class XTCPHandle(Handle):
             rsv = ((127 & packet[0]) >> 4) + (packet[1] >> 7)
             opcode = OPCode(15 & packet[0])
             size = 127 & packet[1]
+            extend = size == 126
             if rsv != 0:
                 raise ValueError("header is invalid.")
-            if size == 125 + 1:
+            if extend:
                 yield 2
                 size = struct.unpack("!H", packet[2:])[0]
             yield size
-            yield opcode, packet[2 + (size > 125) * 2:]
+            yield opcode, packet[2 + extend * 2:]
             if fin:
                 break
 
@@ -670,9 +671,9 @@ class XTCPHandle(Handle):
                 while len(recv) != packet:
                     recv += await self._event_loop.sock_recv(
                         self._socket, packet - len(recv))
-                temp[0].extend(recv)
+                temp[-1].extend(recv)
                 continue
-            if not opcode:
+            if opcode is None:
                 opcode = packet[0]
             if opcode == OPCode.ConnectionClose or self._closed:
                 if self._closed and opcode == OPCode.ConnectionClose:
@@ -685,8 +686,7 @@ class XTCPHandle(Handle):
                 raise ConnectionResetError("Connection was reset by peer.")
             elif opcode == OPCode.Data:
                 packets.append(packet[1])
-                self._closed = False
-            temp[0].clear()
+            temp.append(bytearray())
         return b"".join(packets)
 
     async def close(self) -> None:
