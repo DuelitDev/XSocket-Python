@@ -536,7 +536,6 @@ class Server:
         self._handles: typing.Dict[int, Handle] = {}
         self._wrapper_lock: asyncio.locks.Lock = asyncio.Lock()
         self._collector_lock: asyncio.locks.Lock = asyncio.Lock()
-        self._tasks = []
         self._closed: bool = False
         self._on_open: EventHandler = EventHandler()
         self._on_close: EventHandler = EventHandler()
