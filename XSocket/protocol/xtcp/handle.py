@@ -518,6 +518,7 @@ import asyncio
 from XSocket.core.net import AddressFamily, IPAddressInfo
 from XSocket.core.handle import Handle
 from XSocket.protocol import ProtocolType
+from XSocket.util import OperationControl
 
 __all__ = ["XTCPHandle"]
 
