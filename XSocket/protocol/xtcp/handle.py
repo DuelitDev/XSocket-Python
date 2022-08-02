@@ -531,10 +531,6 @@ class OPCode(enum.IntEnum):
     ConnectionClose = 0x8
 
 
-class OperationControl(BaseException):
-    pass
-
-
 class XTCPHandle(Handle):
     """
     Provides client connections for TCP network services.

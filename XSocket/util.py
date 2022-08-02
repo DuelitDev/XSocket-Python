@@ -1,0 +1,2 @@
+class OperationControl(BaseException):
+    pass
