@@ -546,7 +546,7 @@ class Server:
 
     async def run(self) -> None:
         self._listener.run()
-        await self._wrapper()
+        asyncio.create_task(self._wrapper())
 
     async def close(self) -> None:
         self._closed = True
