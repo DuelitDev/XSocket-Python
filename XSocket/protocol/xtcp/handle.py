@@ -531,6 +531,10 @@ class OPCode(enum.IntEnum):
     ConnectionClose = 0x8
 
 
+class OperationControl(BaseException):
+    pass
+
+
 class XTCPHandle(Handle):
     """
     Provides client connections for TCP network services.
@@ -679,6 +683,7 @@ class XTCPHandle(Handle):
                     raise ConnectionAbortedError(
                         "Connection was aborted by peer.")
                 await self._close(False)
+                raise OperationControl()
             elif opcode == OPCode.Continuation:
                 raise ConnectionResetError("Connection was reset by peer.")
             elif opcode == OPCode.Data:
