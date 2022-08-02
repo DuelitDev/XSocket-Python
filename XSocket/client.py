@@ -515,6 +515,7 @@ import asyncio
 from pyeventlib import EventHandler
 from XSocket.core.handle import Handle
 from XSocket.core.listener import Listener
+from XSocket.util import OperationControl
 
 
 class ClientEventHandler:
@@ -552,6 +553,8 @@ class Client:
             try:
                 data = await self._handle.receive()
                 await self._on_message(self, data)
+            except OperationControl:
+                pass
             except ConnectionAbortedError:
                 break
             except ConnectionResetError:
