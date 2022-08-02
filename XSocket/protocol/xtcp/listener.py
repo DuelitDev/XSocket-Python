@@ -568,6 +568,7 @@ class XTCPListener(Listener):
         self._socket = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
+        self._socket.setblocking(False)
         self._socket.bind((self._address.address, self._address.port))
         self._socket.listen()
         self._running = True
@@ -582,6 +583,7 @@ class XTCPListener(Listener):
         sock = socket.socket(
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
+        sock.setblocking(False)
         await self._event_loop.sock_connect(
             sock, (self._address.address, self._address.port))
         return XTCPHandle(sock)

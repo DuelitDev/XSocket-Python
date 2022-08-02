@@ -511,9 +511,7 @@
 
 
 import typing
-import queue
 import asyncio
-import threading
 from pyeventlib import EventHandler
 from XSocket.core.handle import Handle
 from XSocket.core.listener import Listener
@@ -532,25 +530,20 @@ class Client:
     def __init__(self, listener: Listener):
         self._listener: Listener = listener
         self._handle: typing.Union[Handle, None] = None
-        self._thread: typing.Union[threading.Thread, None] = None
-        self._queue: queue.Queue[typing.Coroutine] = queue.Queue()
         self._closed: bool = False
         self._on_open: EventHandler = EventHandler()
         self._on_close: EventHandler = EventHandler()
         self._on_message: EventHandler = EventHandler()
         self._on_error: EventHandler = EventHandler()
 
-    def run(self) -> None:
-        def _run():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(self._handler())
-        self._thread = threading.Thread(target=_run, daemon=True)
-        self._thread.start()
+    async def run(self) -> None:
+        asyncio.create_task(self._handler())
 
-    def close(self) -> None:
+    async def close(self) -> None:
         self._closed = True
-        self._thread.join()
+        tasks = asyncio.Task.all_tasks()
+        for task in tasks:
+            await task
 
     async def _handler(self) -> None:
         self._handle = await self._listener.connect()
@@ -566,25 +559,14 @@ class Client:
             except Exception as e:
                 await self._on_error(self, e)
                 break
-        self.disconnect()
+        await self.disconnect()
         await self._on_close(self)
 
-    async def _dispatcher(self) -> None:
-        while not self._closed:
-            task = await self._queue.get()
-            await task
-
-    async def _send(self, *args, **kwargs) -> None:
+    async def send(self, *args, **kwargs) -> None:
         await self._handle.send(*args, **kwargs)
 
-    def send(self, *args, **kwargs) -> None:
-        self._queue.put(self._send(*args, **kwargs))
-
-    async def _disconnect(self) -> None:
+    async def disconnect(self) -> None:
         await self._handle.close()
-
-    def disconnect(self) -> None:
-        self._queue.put(self._disconnect())
 
     @property
     def event(self) -> ClientEventHandler:
