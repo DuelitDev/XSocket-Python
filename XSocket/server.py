@@ -573,14 +573,12 @@ class Server:
                 await self._on_message(self, cid, data)
             except OperationControl:
                 pass
-            except ConnectionAbortedError:
-                break
-            except ConnectionResetError:
+            except (ConnectionAbortedError, ConnectionResetError):
+                await self.disconnect(cid)
                 break
             except Exception as e:
                 await self._on_error(self, e)
                 break
-        await self.disconnect(cid)
         await self._on_disconnect(self, cid)
 
     async def send(self, cid: int, *args, **kwargs) -> None:
