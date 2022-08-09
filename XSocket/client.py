@@ -555,14 +555,12 @@ class Client:
                 await self._on_message(self, data)
             except OperationControl:
                 pass
-            except ConnectionAbortedError:
-                break
-            except ConnectionResetError:
+            except (ConnectionAbortedError, ConnectionResetError):
+                await self.disconnect()
                 break
             except Exception as e:
                 await self._on_error(self, e)
                 break
-        await self.disconnect()
         await self._on_close(self)
 
     async def send(self, *args, **kwargs) -> None:
