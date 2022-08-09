@@ -595,6 +595,7 @@ class XTCPListener(Listener):
         :return: XTCPHandle
         """
         sock, addr = await self._event_loop.sock_accept(self._socket)
+        sock.setblocking(False)
         return XTCPHandle(sock)
 
     def close(self) -> None:
