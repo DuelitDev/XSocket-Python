@@ -512,3 +512,5 @@
 
 from XSocket.server import *
 from XSocket.client import *
+from XSocket.core.net import *
+from XSocket.protocol.xtcp import *
