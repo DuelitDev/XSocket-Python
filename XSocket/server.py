@@ -574,7 +574,6 @@ class Server:
             except OperationControl:
                 pass
             except (ConnectionAbortedError, ConnectionResetError):
-                await self.disconnect(cid)
                 break
             except Exception as e:
                 await self._on_error(self, e)
@@ -590,7 +589,6 @@ class Server:
 
     async def disconnect(self, cid: int) -> None:
         async with self._collector_lock:
-            await self._handles[cid].close()
             del self._handles[cid]
 
     @property

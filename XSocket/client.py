@@ -556,7 +556,6 @@ class Client:
             except OperationControl:
                 pass
             except (ConnectionAbortedError, ConnectionResetError):
-                await self.disconnect()
                 break
             except Exception as e:
                 await self._on_error(self, e)
