@@ -511,6 +511,7 @@
 
 
 import socket
+import struct
 import asyncio
 from XSocket.core.net import AddressFamily, IPAddressInfo
 from XSocket.core.listener import Listener
@@ -569,6 +570,9 @@ class XTCPListener(Listener):
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
         self._socket.setblocking(False)
+        self._socket.setsockopt(socket.SOL_SOCKET,
+                                socket.SO_LINGER,
+                                struct.pack("ii", 1, 0))
         self._socket.bind((self._address.address, self._address.port))
         self._socket.listen()
         self._running = True
@@ -584,6 +588,9 @@ class XTCPListener(Listener):
             socket.AddressFamily(self._address.address_family),
             socket.SOCK_STREAM)
         sock.setblocking(False)
+        sock.setsockopt(socket.SOL_SOCKET,
+                        socket.SO_LINGER,
+                        struct.pack("ii", 1, 0))
         await self._event_loop.sock_connect(
             sock, (self._address.address, self._address.port))
         return XTCPHandle(sock)
