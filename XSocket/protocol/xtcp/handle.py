@@ -520,7 +520,7 @@ from XSocket.core.handle import Handle
 from XSocket.protocol import ProtocolType
 from XSocket.util import OperationControl
 
-__all__ = ["XTCPHandle"]
+__all__ = ["XTCPHandle", "OPCode"]
 
 
 class OPCode(enum.IntEnum):
