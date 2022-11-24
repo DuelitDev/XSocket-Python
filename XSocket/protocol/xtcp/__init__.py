@@ -510,5 +510,6 @@
 # That's all there is to it!
 
 
+from XSocket.protocol.xtcp.handle import OPCode
 from XSocket.protocol.xtcp.handle import XTCPHandle
 from XSocket.protocol.xtcp.listener import XTCPListener
