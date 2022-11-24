@@ -510,6 +510,7 @@
 # That's all there is to it!
 
 
+import typing
 import socket
 import struct
 import asyncio
@@ -525,13 +526,18 @@ class XTCPListener(Listener):
     """
     Listens for connections from TCP network clients.
     """
-    def __init__(self, address: IPAddressInfo) -> None:
+
+    def __init__(self,
+                 address: typing.Union[IPAddressInfo, typing.Tuple[str, int]]
+                 ) -> None:
         """
         Listens for connections from TCP network clients.
 
         :param address: Local address
         """
         super().__init__()
+        if isinstance(address, tuple):
+            address = IPAddressInfo(address[0], address[1])
         self._address = address
 
     @property
