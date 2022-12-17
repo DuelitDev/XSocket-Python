@@ -1,14 +1,14 @@
-# XSocket (version: 0.0.1a)
+# XSocket (version: 0.0.2a)
 #
-# Copyright 2022. Kim Jae-yun all rights reserved.
+# Copyright 2022. DuelitDev all rights reserved.
 #
 # This Library is distributed under the LGPL-2.1 License.
 
-import ipaddress
-from enum import IntEnum
 from abc import ABCMeta, abstractmethod
+from enum import IntEnum
+from ipaddress import ip_address
 from isinstancex import isinstancex
-from pyfieldlib import fields, FieldMeta
+from pyfieldlib import FieldMeta, fields
 
 __all__ = [
     "AddressFamily",
@@ -63,10 +63,11 @@ class IPAddressInfo(AddressInfo):
     """
 
     def __init__(self, address: str, port: int) -> None:
-        isinstancex(address, str)
-        assert ipaddress.ip_address(address) is not None, "Address is invalid."
-        self._address = address
-        self._port = port
+        isinstancex(address, str) and isinstancex(port, int)
+        assert ip_address(address) is not None, "Address is invalid."
+        assert 0 <= port <= 65535, "The port must be between 0 and 65535."
+        self._address: str = address
+        self._port: int = port
 
     @fields
     def max_port(self) -> int:
@@ -113,8 +114,7 @@ class IPAddressInfo(AddressInfo):
 
         :return: AddressFamily
         """
-        address = ipaddress.ip_address(self._address)
-        if address.version == 4:
+        if ip_address(self._address).version == 4:
             return AddressFamily.InterNetwork
         else:
             return AddressFamily.InterNetworkV6
