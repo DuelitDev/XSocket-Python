@@ -17,6 +17,7 @@ class Socket(metaclass=ABCMeta):
     """
     Implements sockets interface.
     """
+
     @property
     @abstractmethod
     def local_address(self) -> AddressInfo:
