@@ -32,7 +32,7 @@ class Handle(metaclass=ABCMeta):
         Gets a value indicating whether
         the Socket for a Handle has been closed.
 
-        :return: bool
+        :return: bool.
         """
         return self._closed
 

@@ -52,7 +52,7 @@ class AddressInfo(metaclass=type("", (ABCMeta, FieldMeta), {})):
         """
         Returns a hash code for the current object.
 
-        :return: hash code
+        :return: Hash code
         """
 
 
@@ -93,7 +93,7 @@ class IPAddressInfo(AddressInfo):
         """
         Gets the IP address of the AddressInfo.
 
-        :return: String of ip address.
+        :return: String of ip address
         """
         return self._address
 
@@ -122,7 +122,7 @@ class IPAddressInfo(AddressInfo):
         """
         Gets the IP address and port number of the AddressInfo as an iterator.
 
-        :return: ip address, port number
+        :return: IP Address, Port number
         """
         return iter((self._address, self._port))
 
@@ -130,6 +130,6 @@ class IPAddressInfo(AddressInfo):
         """
         Returns a hash code for the current object.
 
-        :return: hash code
+        :return: Hash code
         """
         return hash((self._address, self._port))

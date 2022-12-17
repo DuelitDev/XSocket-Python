@@ -14,29 +14,56 @@ __all__ = [
 
 
 class Socket(metaclass=ABCMeta):
+    """
+    Implements sockets interface.
+    """
     @property
     @abstractmethod
     def local_address(self) -> AddressInfo:
-        pass
+        """
+        Gets the local address info.
+
+        :return: AddressInfo
+        """
 
     @property
     @abstractmethod
     def remote_address(self) -> AddressInfo:
-        pass
+        """
+        Gets the remote address info.
+
+        :return: AddressInfo
+        """
 
     @property
     @abstractmethod
     def get_raw_socket(self) -> Any:
-        pass
+        """
+        Get a low-level socket.
+
+        :return: Low-level socket
+        """
 
     @abstractmethod
     async def send(self, data: bytearray):
-        pass
+        """
+        Sends data to a connected Socket.
+
+        :param data: Data to send
+        """
 
     @abstractmethod
     async def receive(self, length: int, exactly: bool = False) -> bytearray:
-        pass
+        """
+        Receives data from a bound Socket.
+
+        :param length: The number of bytes to receive
+        :param exactly: weather to read exactly
+        :return: Received data
+        """
 
     @abstractmethod
     def close(self):
-        pass
+        """
+        Close the socket.
+        """
