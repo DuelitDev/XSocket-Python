@@ -510,7 +510,8 @@
 # That's all there is to it!
 
 
-from XSocket.server import *
-from XSocket.client import *
-from XSocket.core.net import *
-from XSocket.protocol.xtcp import *
+from XSocket.server import Server
+from XSocket.client import Client
+from XSocket.util import OPCode
+from XSocket.core import *
+from XSocket.protocol import *
