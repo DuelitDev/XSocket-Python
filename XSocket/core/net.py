@@ -9,6 +9,7 @@ from enum import IntEnum
 from ipaddress import ip_address
 from isinstancex import isinstancex
 from pyfieldlib import FieldMeta, fields
+from typing import Iterator, Union
 
 __all__ = [
     "AddressFamily",
@@ -92,7 +93,7 @@ class IPAddressInfo(AddressInfo):
     @property
     def address(self) -> str:
         """
-        Gets or sets the IP address of the AddressInfo.
+        Gets the IP address of the AddressInfo.
 
         :return: String of ip address.
         """
@@ -101,9 +102,9 @@ class IPAddressInfo(AddressInfo):
     @property
     def port(self) -> int:
         """
-        Gets or sets the port number of the AddressInfo.
+        Gets the port number of the AddressInfo.
 
-        :return: 0 ~ 65535
+        :return: Port number
         """
         return self._port
 
@@ -118,6 +119,14 @@ class IPAddressInfo(AddressInfo):
             return AddressFamily.InterNetwork
         else:
             return AddressFamily.InterNetworkV6
+
+    def __iter__(self) -> Iterator[Union[str, int]]:
+        """
+        Gets the IP address and port number of the AddressInfo as an iterator.
+
+        :return: ip address, port number
+        """
+        return iter((self._address, self._port))
 
     def __hash__(self) -> int:
         """
