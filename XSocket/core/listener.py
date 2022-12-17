@@ -56,7 +56,6 @@ class Listener(metaclass=ABCMeta):
 
         :return: AddressInfo
         """
-        pass
 
     @property
     @abstractmethod
@@ -66,7 +65,6 @@ class Listener(metaclass=ABCMeta):
 
         :return: AddressFamily
         """
-        pass
 
     @property
     @abstractmethod
@@ -76,14 +74,12 @@ class Listener(metaclass=ABCMeta):
 
         :return: ProtocolType
         """
-        pass
 
     @abstractmethod
     def run(self):
         """
         Starts listening for incoming connection requests.
         """
-        pass
 
     @abstractmethod
     async def connect(self) -> Handle:
@@ -92,7 +88,6 @@ class Listener(metaclass=ABCMeta):
 
         :return: Handle
         """
-        pass
 
     @abstractmethod
     async def accept(self) -> Handle:
@@ -101,11 +96,9 @@ class Listener(metaclass=ABCMeta):
 
         :return: Handle
         """
-        pass
 
     @abstractmethod
     def close(self):
         """
         Closes the listener.
         """
-        pass

@@ -46,7 +46,6 @@ class AddressInfo(metaclass=type("", (ABCMeta, FieldMeta), {})):
 
         :return: AddressFamily
         """
-        pass
 
     @abstractmethod
     def __hash__(self) -> int:
@@ -55,7 +54,6 @@ class AddressInfo(metaclass=type("", (ABCMeta, FieldMeta), {})):
 
         :return: hash code
         """
-        pass
 
 
 class IPAddressInfo(AddressInfo):

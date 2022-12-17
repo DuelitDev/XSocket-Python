@@ -133,7 +133,6 @@ class XTCPHandle(Handle):
 
         :param data: Data to send.
         :param opcode: Operation Code.
-        :return:
         """
         for packet in self.pack(bytearray(data), opcode):
             await self._socket.send(packet)

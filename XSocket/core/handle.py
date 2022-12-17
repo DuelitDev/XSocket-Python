@@ -44,7 +44,6 @@ class Handle(metaclass=ABCMeta):
 
         :return: AddressInfo
         """
-        pass
 
     @property
     @abstractmethod
@@ -54,7 +53,6 @@ class Handle(metaclass=ABCMeta):
 
         :return: AddressInfo
         """
-        pass
 
     @property
     @abstractmethod
@@ -64,7 +62,6 @@ class Handle(metaclass=ABCMeta):
 
         :return: AddressFamily
         """
-        pass
 
     @property
     @abstractmethod
@@ -74,7 +71,6 @@ class Handle(metaclass=ABCMeta):
 
         :return: ProtocolType
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -86,7 +82,6 @@ class Handle(metaclass=ABCMeta):
         :param data: Data to send
         :return: Packet generator
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -98,14 +93,12 @@ class Handle(metaclass=ABCMeta):
         :param packets: Received packet
         :return: See docstring
         """
-        pass
 
     @abstractmethod
     async def send(self, *args, **kwargs):
         """
         Sends data to a connected Socket.
         """
-        pass
 
     @abstractmethod
     async def receive(self) -> bytearray:
@@ -114,11 +107,9 @@ class Handle(metaclass=ABCMeta):
 
         :return: Received data
         """
-        pass
 
     @abstractmethod
     async def close(self):
         """
         Closes the Socket connection.
         """
-        pass
