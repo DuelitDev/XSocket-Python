@@ -106,7 +106,7 @@ class XTCPHandle(Handle):
         If generator yields a tuple, It must empty the bytearray of the list.
         Also, tuple contains OPCode and data.
 
-        :param packets: Received packet, bytearray in list must be empty.
+        :param packets: Received packet, bytearray in list must be empty
         :return: See docstring
         """
         for packet in packets:
@@ -131,8 +131,8 @@ class XTCPHandle(Handle):
         """
         Sends data to a connected Socket.
 
-        :param data: Data to send.
-        :param opcode: Operation Code.
+        :param data: Data to send
+        :param opcode: Operation Code
         """
         for packet in self.pack(bytearray(data), opcode):
             await self._socket.send(packet)
@@ -176,7 +176,7 @@ class XTCPHandle(Handle):
         """
         Sends a connection close signal to the peer and closes the socket.
 
-        :param _close_socket: Whether to close the socket.
+        :param _close_socket: Whether to close the socket
         """
         if _close_socket:
             return self._socket.close()
