@@ -29,7 +29,7 @@ class Listener(metaclass=ABCMeta):
         self._closed: bool = False
 
     @property
-    def is_running(self) -> bool:
+    def running(self) -> bool:
         """
         Gets a value indicating whether
         the Socket for a Listener is running.
