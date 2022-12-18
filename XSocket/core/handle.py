@@ -5,36 +5,20 @@
 # This Library is distributed under the LGPL-2.1 License.
 
 from abc import ABCMeta, abstractmethod
-from asyncio import AbstractEventLoop
-from typing import Any, Generator, List, Optional
+from typing import Any, Generator, List
 from XSocket.core.net import AddressFamily, AddressInfo
-from XSocket.core.socket import Socket
 from XSocket.protocol.protocol import ProtocolType
+from XSocket.util import OPCode
 
 __all__ = [
-    "Handle"
+    "IHandle"
 ]
 
 
-class Handle(metaclass=ABCMeta):
+class IHandle(metaclass=ABCMeta):
     """
     Provides client connections for network services.
     """
-    def __init__(self, *args, **kwargs):
-        self._socket: Optional[Socket] = None
-        self._address: Optional[AddressInfo] = None
-        self._event_loop: Optional[AbstractEventLoop] = None
-        self._closed: bool = False
-
-    @property
-    def closed(self) -> bool:
-        """
-        Gets a value indicating whether
-        the Socket for a Handle has been closed.
-
-        :return: bool.
-        """
-        return self._closed
 
     @property
     @abstractmethod
@@ -72,21 +56,30 @@ class Handle(metaclass=ABCMeta):
         :return: ProtocolType
         """
 
-    @staticmethod
+    @property
     @abstractmethod
-    def pack(data: bytearray,
-             *args, **kwargs) -> Generator[bytearray, None, None]:
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Handle has been closed.
+
+        :return: bool
+        """
+
+    @abstractmethod
+    def pack(self, data: bytearray, opcode: OPCode
+             ) -> Generator[bytearray, None, None]:
         """
         Generates a packet to be transmitted.
 
         :param data: Data to send
+        :param opcode: Operation code
         :return: Packet generator
         """
 
-    @staticmethod
     @abstractmethod
-    def unpack(packets: List[bytearray],
-               *args, **kwargs) -> Generator[Any, None, None]:
+    def unpack(self, packets: List[bytearray], *args, **kwargs
+               ) -> Generator[Any, None, None]:
         """
         Read the header of the received packet and get the data.
 

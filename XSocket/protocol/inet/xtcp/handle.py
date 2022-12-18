@@ -7,7 +7,7 @@
 from asyncio import AbstractEventLoop, get_running_loop
 from struct import pack, unpack
 from typing import Generator, List, Union
-from XSocket.core.handle import Handle
+from XSocket.core.handle import IHandle
 from XSocket.core.net import AddressFamily
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.inet.net import IPAddressInfo
@@ -19,10 +19,11 @@ __all__ = [
 ]
 
 
-class XTCPHandle(Handle):
+class XTCPHandle(IHandle):
     """
     Provides client connections for TCP network services.
     """
+
     def __init__(self, socket: XTCPSocket):
         """
         Provides client connections for TCP network services.
@@ -69,8 +70,16 @@ class XTCPHandle(Handle):
         """
         return ProtocolType.Xtcp
 
-    @staticmethod
-    def pack(data: bytearray, opcode: OPCode = OPCode.Data, *args, **kwargs
+    @property
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Handle has been closed.
+
+        :return: bool
+        """
+
+    def pack(self, data: bytearray, opcode: OPCode = OPCode.Data
              ) -> Generator[bytearray, None, None]:
         """
         Generates a packet to be transmitted.
@@ -162,10 +171,8 @@ class XTCPHandle(Handle):
                 raise OperationControl()
             elif opcode == OPCode.Continuation:
                 raise ConnectionResetError("Connection was reset by peer.")
-            elif opcode == OPCode.Data:
-                packets += packet[1]
             temp.append(bytearray())
-        return packets
+        return temp
 
     async def close(self):
         """
