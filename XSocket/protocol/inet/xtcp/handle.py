@@ -33,6 +33,7 @@ class XTCPHandle(IHandle):
         super().__init__()
         self._socket: XTCPSocket = socket
         self._event_loop: AbstractEventLoop = get_running_loop()
+        self._closed: bool = False
 
     @property
     def local_address(self) -> IPAddressInfo:
@@ -78,6 +79,7 @@ class XTCPHandle(IHandle):
 
         :return: bool
         """
+        return self._closed
 
     def pack(self, data: bytearray, opcode: OPCode = OPCode.Data
              ) -> Generator[bytearray, None, None]:
@@ -104,9 +106,7 @@ class XTCPHandle(IHandle):
                 yield header + segment
             yield bytearray([fin | OPCode.Continuation, 0])
 
-    @staticmethod
-    def unpack(packets: List[bytearray], *args, **kwargs
-               ) -> Generator[Union[int, tuple], None, None]:
+    def unpack(self, packets: List[bytearray]) -> Generator[int, None, None]:
         """
         Read the header of the received packet and get the data.
 
@@ -131,8 +131,11 @@ class XTCPHandle(IHandle):
             if extend:
                 yield 2
                 size = unpack("!H", packet[2:])[0]
+            else:
+                yield 0
+            packet.clear()
             yield size
-            yield opcode, packet[2 + extend * 2:]
+            yield opcode
             if fin:
                 break
 
@@ -153,15 +156,16 @@ class XTCPHandle(IHandle):
 
         :return: Received data
         """
-        packets = bytearray()
         opcode = None
         temp = [bytearray()]
+        counter = 0
         for packet in self.unpack(temp):
-            if isinstance(packet, int):
+            counter += 1
+            if counter % 4 != 0:
                 temp[-1] += await self._socket.receive(packet, exactly=True)
                 continue
             if opcode is None:
-                opcode = packet[0]
+                opcode = packet
             if opcode == OPCode.ConnectionClose or self._closed:
                 if self._closed and opcode == OPCode.ConnectionClose:
                     await self._close(True)
@@ -172,7 +176,7 @@ class XTCPHandle(IHandle):
             elif opcode == OPCode.Continuation:
                 raise ConnectionResetError("Connection was reset by peer.")
             temp.append(bytearray())
-        return temp
+        return bytearray(b"".join(temp))
 
     async def close(self):
         """
