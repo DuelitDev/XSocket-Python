@@ -73,6 +73,12 @@ class IListener(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def close(self):
+        """
+        Closes the listener.
+        """
+
+    @abstractmethod
     async def connect(self) -> IHandle:
         """
         Establishes a connection to a remote host.
@@ -86,10 +92,4 @@ class IListener(metaclass=ABCMeta):
         Creates a new Handle for a newly created connection.
 
         :return: Handle
-        """
-
-    @abstractmethod
-    def close(self):
-        """
-        Closes the listener.
         """

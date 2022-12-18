@@ -6,7 +6,7 @@
 
 from asyncio import AbstractEventLoop, get_running_loop
 from socket import socket
-from XSocket.core.socket import Socket
+from XSocket.core.socket import ISocket
 from XSocket.protocol.inet.net import IPAddressInfo
 
 __all__ = [
@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class XTCPSocket(Socket):
+class XTCPSocket(ISocket):
     """
     Implements XTCP sockets interface.
     """
@@ -22,6 +22,15 @@ class XTCPSocket(Socket):
     def __init__(self, socket_: socket):
         self._socket: socket = socket_
         self._event_loop: AbstractEventLoop = get_running_loop()
+
+    @property
+    def get_raw_socket(self) -> socket:
+        """
+        Get a low-level socket.
+
+        :return: Low-level socket
+        """
+        return self._socket
 
     @property
     def local_address(self) -> IPAddressInfo:
@@ -41,14 +50,11 @@ class XTCPSocket(Socket):
         """
         return IPAddressInfo(*self._socket.getpeername())
 
-    @property
-    def get_raw_socket(self) -> socket:
+    def close(self):
         """
-        Get a low-level socket.
-
-        :return: Low-level socket
+        Close the socket.
         """
-        return self._socket
+        self._socket.close()
 
     async def send(self, data: bytearray):
         """
@@ -73,9 +79,3 @@ class XTCPSocket(Socket):
             if not exactly:
                 break
         return buffer
-
-    def close(self):
-        """
-        Close the socket.
-        """
-        self._socket.close()

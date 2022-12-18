@@ -5,7 +5,7 @@
 # This Library is distributed under the LGPL-2.1 License.
 
 from abc import ABCMeta, abstractmethod
-from typing import Any, Generator, List
+from typing import Generator, List
 from XSocket.core.net import AddressFamily, AddressInfo
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode
@@ -19,6 +19,16 @@ class IHandle(metaclass=ABCMeta):
     """
     Provides client connections for network services.
     """
+
+    @property
+    @abstractmethod
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Handle has been closed.
+
+        :return: bool
+        """
 
     @property
     @abstractmethod
@@ -56,19 +66,14 @@ class IHandle(metaclass=ABCMeta):
         :return: ProtocolType
         """
 
-    @property
     @abstractmethod
-    def closed(self) -> bool:
+    async def close(self):
         """
-        Gets a value indicating whether
-        the Socket for a Handle has been closed.
-
-        :return: bool
+        Closes the Socket connection.
         """
 
     @abstractmethod
-    def pack(self, data: bytearray, opcode: OPCode
-             ) -> Generator[bytearray, None, None]:
+    def pack(self, data: bytearray, opcode: OPCode) -> Generator[bytearray]:
         """
         Generates a packet to be transmitted.
 
@@ -78,7 +83,7 @@ class IHandle(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def unpack(self, packets: List[bytearray]) -> Generator[Any, None, None]:
+    def unpack(self, packets: List[bytearray]) -> Generator[int]:
         """
         Read the header of the received packet and get the data.
 
@@ -98,10 +103,4 @@ class IHandle(metaclass=ABCMeta):
         Receives data from a bound Socket.
 
         :return: Received data
-        """
-
-    @abstractmethod
-    async def close(self):
-        """
-        Closes the Socket connection.
         """

@@ -4,11 +4,11 @@
 #
 # This Library is distributed under the LGPL-2.1 License.
 
-from asyncio import get_running_loop
-from typing import Union, Tuple
+from asyncio import AbstractEventLoop, get_running_loop
+from typing import Optional, Tuple, Union
 from socket import SOCK_STREAM, SOL_SOCKET, SO_LINGER, socket
 from struct import pack
-from XSocket.core.listener import Listener
+from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.inet.net import IPAddressInfo
@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-class XTCPListener(Listener):
+class XTCPListener(IListener):
     """
     Listens for connections from TCP network clients.
     """
@@ -32,9 +32,33 @@ class XTCPListener(Listener):
         :param address: Local address
         """
         super().__init__()
+        self._socket: Optional[socket] = None
+        self._event_loop: Optional[AbstractEventLoop] = None
         if isinstance(address, tuple):
             address = IPAddressInfo(address[0], address[1])
-        self._address = address
+        self._address: IPAddressInfo = address
+        self._running: bool = False
+        self._closed: bool = False
+
+    @property
+    def running(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Listener is running.
+
+        :return: bool
+        """
+        return self._running
+
+    @property
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Listener has been closed.
+
+        :return: bool
+        """
+        return self._closed
 
     @property
     def local_address(self) -> IPAddressInfo:

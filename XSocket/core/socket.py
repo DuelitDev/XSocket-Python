@@ -20,6 +20,15 @@ class ISocket(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def get_raw_socket(self) -> Any:
+        """
+        Get a low-level socket.
+
+        :return: Low-level socket
+        """
+
+    @property
+    @abstractmethod
     def local_address(self) -> AddressInfo:
         """
         Gets the local address info.
@@ -36,13 +45,10 @@ class ISocket(metaclass=ABCMeta):
         :return: AddressInfo
         """
 
-    @property
     @abstractmethod
-    def get_raw_socket(self) -> Any:
+    def close(self):
         """
-        Get a low-level socket.
-
-        :return: Low-level socket
+        Close the socket.
         """
 
     @abstractmethod
@@ -61,10 +67,4 @@ class ISocket(metaclass=ABCMeta):
         :param length: The number of bytes to receive
         :param exactly: Weather to read exactly
         :return: Received data
-        """
-
-    @abstractmethod
-    def close(self):
-        """
-        Close the socket.
         """

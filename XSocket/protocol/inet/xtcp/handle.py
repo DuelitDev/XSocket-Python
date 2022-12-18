@@ -36,6 +36,16 @@ class XTCPHandle(IHandle):
         self._closed: bool = False
 
     @property
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Handle has been closed.
+
+        :return: bool
+        """
+        return self._closed
+
+    @property
     def local_address(self) -> IPAddressInfo:
         """
         Gets the local ip endpoint.
@@ -71,15 +81,22 @@ class XTCPHandle(IHandle):
         """
         return ProtocolType.Xtcp
 
-    @property
-    def closed(self) -> bool:
+    async def close(self):
         """
-        Gets a value indicating whether
-        the Socket for a Handle has been closed.
+        Closes the Socket connection.
+        """
+        await self._close(_close_socket=False)
 
-        :return: bool
+    async def _close(self, _close_socket: bool):
         """
-        return self._closed
+        Sends a connection close signal to the peer and closes the socket.
+
+        :param _close_socket: Whether to close the socket
+        """
+        if _close_socket:
+            return self._socket.close()
+        await self.send(bytearray(), OPCode.ConnectionClose)
+        self._closed = True
 
     def pack(self, data: bytearray, opcode: OPCode = OPCode.Data
              ) -> Generator[bytearray, None, None]:
@@ -177,20 +194,3 @@ class XTCPHandle(IHandle):
                 raise ConnectionResetError("Connection was reset by peer.")
             temp.append(bytearray())
         return bytearray(b"".join(temp))
-
-    async def close(self):
-        """
-        Closes the Socket connection.
-        """
-        await self._close(_close_socket=False)
-
-    async def _close(self, _close_socket: bool):
-        """
-        Sends a connection close signal to the peer and closes the socket.
-
-        :param _close_socket: Whether to close the socket
-        """
-        if _close_socket:
-            return self._socket.close()
-        await self.send(bytearray(), OPCode.ConnectionClose)
-        self._closed = True

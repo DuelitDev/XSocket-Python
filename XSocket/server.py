@@ -7,8 +7,8 @@
 from asyncio import Task, Lock, create_task
 from pyeventlib import EventHandler
 from typing import Dict
-from XSocket.core.handle import Handle
-from XSocket.core.listener import Listener
+from XSocket.core.handle import IHandle
+from XSocket.core.listener import IListener
 from XSocket.util import OperationControl
 
 __all__ = [
@@ -29,9 +29,9 @@ class ServerEventHandler:
 
 
 class Server:
-    def __init__(self, listener: Listener):
-        self._listener: Listener = listener
-        self._handles: Dict[int, Handle] = {}
+    def __init__(self, listener: IListener):
+        self._listener: IListener = listener
+        self._handles: Dict[int, IHandle] = {}
         self._wrapper_lock: Lock = Lock()
         self._collector_lock: Lock = Lock()
         self._closed: bool = False

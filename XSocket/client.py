@@ -7,8 +7,8 @@
 from asyncio import Task, create_task
 from pyeventlib import EventHandler
 from typing import Optional
-from XSocket.core.handle import Handle
-from XSocket.core.listener import Listener
+from XSocket.core.handle import IHandle
+from XSocket.core.listener import IListener
 from XSocket.util import OperationControl
 
 __all__ = [
@@ -26,9 +26,9 @@ class ClientEventHandler:
 
 
 class Client:
-    def __init__(self, listener: Listener):
-        self._listener: Listener = listener
-        self._handle: Optional[Handle] = None
+    def __init__(self, listener: IListener):
+        self._listener: IListener = listener
+        self._handle: Optional[IHandle] = None
         self._closed: bool = False
         self._on_open: EventHandler = EventHandler()
         self._on_close: EventHandler = EventHandler()
