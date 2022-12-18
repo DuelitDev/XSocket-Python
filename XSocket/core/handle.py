@@ -73,7 +73,8 @@ class IHandle(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def pack(self, data: bytearray, opcode: OPCode) -> Generator[bytearray]:
+    def pack(self, data: bytearray, opcode: OPCode
+             ) -> Generator[bytearray, None, None]:
         """
         Generates a packet to be transmitted.
 
@@ -83,7 +84,7 @@ class IHandle(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def unpack(self, packets: List[bytearray]) -> Generator[int]:
+    def unpack(self, packets: List[bytearray]) -> Generator[int, None, None]:
         """
         Read the header of the received packet and get the data.
 
