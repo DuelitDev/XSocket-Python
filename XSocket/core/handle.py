@@ -5,7 +5,7 @@
 # This Library is distributed under the LGPL-2.1 License.
 
 from abc import ABCMeta, abstractmethod
-from typing import Generator, List
+from typing import Generator, List, Union
 from XSocket.core.net import AddressFamily, AddressInfo
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode
@@ -93,7 +93,8 @@ class IHandle(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def send(self, *args, **kwargs):
+    async def send(self, data: Union[bytes, bytearray],
+                   opcode: OPCode = OPCode.Data):
         """
         Sends data to a connected Socket.
         """
