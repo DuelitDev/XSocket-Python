@@ -59,7 +59,7 @@ class Socket(metaclass=ABCMeta):
         Receives data from a bound Socket.
 
         :param length: The number of bytes to receive
-        :param exactly: weather to read exactly
+        :param exactly: Weather to read exactly
         :return: Received data
         """
 
