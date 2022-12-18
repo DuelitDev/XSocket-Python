@@ -8,9 +8,10 @@ from asyncio import AbstractEventLoop, get_running_loop
 from struct import pack, unpack
 from typing import Generator, List, Union
 from XSocket.core.handle import Handle
-from XSocket.core.net import AddressFamily, IPAddressInfo
+from XSocket.core.net import AddressFamily
 from XSocket.protocol.protocol import ProtocolType
-from XSocket.protocol.xtcp.socket import XTCPSocket
+from XSocket.protocol.inet.net import IPAddressInfo
+from XSocket.protocol.inet.xtcp.socket import XTCPSocket
 from XSocket.util import OPCode, OperationControl
 
 __all__ = [

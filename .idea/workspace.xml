@@ -4,8 +4,10 @@
     <list default="true" id="c811dc99-0253-4408-b930-e24297cb436f" name="변경" comment="code refactoring">
       <change afterPath="$PROJECT_DIR$/test_client.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/test_server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/XSocket-Python.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/XSocket-Python.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XSocket/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/XSocket/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XSocket/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/XSocket/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,7 +165,7 @@
       <workItem from="1669250171356" duration="7513000" />
       <workItem from="1671162039427" duration="13000" />
       <workItem from="1671249277112" duration="2722000" />
-      <workItem from="1671277190773" duration="13835000" />
+      <workItem from="1671277190773" duration="15972000" />
     </task>
     <task id="LOCAL-00001" summary=".">
       <created>1660035605138</created>
@@ -284,7 +286,49 @@
       <option name="project" value="LOCAL" />
       <updated>1671303432799</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="edit gitignore">
+      <created>1671304496200</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1671304496200</updated>
+    </task>
+    <task id="LOCAL-00019" summary="add .idea">
+      <created>1671304540829</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1671304540829</updated>
+    </task>
+    <task id="LOCAL-00020" summary="code refactoring &amp; edit docstring">
+      <created>1671305390693</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1671305390693</updated>
+    </task>
+    <task id="LOCAL-00021" summary="code refactoring">
+      <created>1671305536074</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1671305536074</updated>
+    </task>
+    <task id="LOCAL-00022" summary="code refactoring">
+      <created>1671305614363</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1671305614363</updated>
+    </task>
+    <task id="LOCAL-00023" summary="code refactoring">
+      <created>1671305803568</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1671305803568</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -315,6 +359,9 @@
     <MESSAGE value="add OPCode import" />
     <MESSAGE value="create socket wrapper core" />
     <MESSAGE value="IPAddressInfo is now support unpacking operator(*)" />
+    <MESSAGE value="edit gitignore" />
+    <MESSAGE value="add .idea" />
+    <MESSAGE value="code refactoring &amp; edit docstring" />
     <MESSAGE value="code refactoring" />
     <option name="LAST_COMMIT_MESSAGE" value="code refactoring" />
   </component>

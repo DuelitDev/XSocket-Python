@@ -9,10 +9,11 @@ from typing import Union, Tuple
 from socket import SOCK_STREAM, SOL_SOCKET, SO_LINGER, socket
 from struct import pack
 from XSocket.core.listener import Listener
-from XSocket.core.net import AddressFamily, IPAddressInfo
+from XSocket.core.net import AddressFamily
 from XSocket.protocol.protocol import ProtocolType
-from XSocket.protocol.xtcp.handle import XTCPHandle
-from XSocket.protocol.xtcp.socket import XTCPSocket
+from XSocket.protocol.inet.net import IPAddressInfo
+from XSocket.protocol.inet.xtcp.handle import XTCPHandle
+from XSocket.protocol.inet.xtcp.socket import XTCPSocket
 
 __all__ = [
     "XTCPListener"

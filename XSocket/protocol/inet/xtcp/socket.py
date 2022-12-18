@@ -6,8 +6,8 @@
 
 from asyncio import AbstractEventLoop, get_running_loop
 from socket import socket
-from XSocket.core.net import IPAddressInfo
 from XSocket.core.socket import Socket
+from XSocket.protocol.inet.net import IPAddressInfo
 
 __all__ = [
     "XTCPSocket"
