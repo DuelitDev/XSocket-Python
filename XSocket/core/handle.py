@@ -78,8 +78,7 @@ class IHandle(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def unpack(self, packets: List[bytearray], *args, **kwargs
-               ) -> Generator[Any, None, None]:
+    def unpack(self, packets: List[bytearray]) -> Generator[Any, None, None]:
         """
         Read the header of the received packet and get the data.
 

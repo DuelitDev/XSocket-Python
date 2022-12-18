@@ -9,11 +9,11 @@ from typing import Any
 from XSocket.core.net import AddressInfo
 
 __all__ = [
-    "Socket"
+    "ISocket"
 ]
 
 
-class Socket(metaclass=ABCMeta):
+class ISocket(metaclass=ABCMeta):
     """
     Implements sockets interface.
     """

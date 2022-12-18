@@ -5,30 +5,22 @@
 # This Library is distributed under the LGPL-2.1 License.
 
 from abc import ABCMeta, abstractmethod
-from asyncio import AbstractEventLoop
-from typing import Optional
-from XSocket.core.handle import Handle
+from XSocket.core.handle import IHandle
 from XSocket.core.net import AddressFamily, AddressInfo
-from XSocket.core.socket import Socket
 from XSocket.protocol.protocol import ProtocolType
 
 __all__ = [
-    "Listener"
+    "IListener"
 ]
 
 
-class Listener(metaclass=ABCMeta):
+class IListener(metaclass=ABCMeta):
     """
     Listens for connections from network clients.
     """
-    def __init__(self, *args, **kwargs) -> None:
-        self._socket: Optional[Socket] = None
-        self._address: Optional[AddressInfo] = None
-        self._event_loop: Optional[AbstractEventLoop] = None
-        self._running: bool = False
-        self._closed: bool = False
 
     @property
+    @abstractmethod
     def running(self) -> bool:
         """
         Gets a value indicating whether
@@ -36,9 +28,9 @@ class Listener(metaclass=ABCMeta):
 
         :return: bool
         """
-        return self._running
 
     @property
+    @abstractmethod
     def closed(self) -> bool:
         """
         Gets a value indicating whether
@@ -46,7 +38,6 @@ class Listener(metaclass=ABCMeta):
 
         :return: bool
         """
-        return self._closed
 
     @property
     @abstractmethod
@@ -82,7 +73,7 @@ class Listener(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def connect(self) -> Handle:
+    async def connect(self) -> IHandle:
         """
         Establishes a connection to a remote host.
 
@@ -90,7 +81,7 @@ class Listener(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def accept(self) -> Handle:
+    async def accept(self) -> IHandle:
         """
         Creates a new Handle for a newly created connection.
 
