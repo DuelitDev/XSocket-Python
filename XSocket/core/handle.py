@@ -97,6 +97,9 @@ class IHandle(metaclass=ABCMeta):
                    opcode: OPCode = OPCode.Data):
         """
         Sends data to a connected Socket.
+
+        :param data: Data to send
+        :param opcode: Operation Code
         """
 
     @abstractmethod
