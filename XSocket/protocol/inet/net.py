@@ -20,7 +20,7 @@ class IPAddressInfo(AddressInfo):
     Represents a network endpoint as an IP address and a port number.
     """
 
-    def __init__(self, address: str, port: int) -> None:
+    def __init__(self, address: str, port: int):
         isinstancex(address, str) and isinstancex(port, int)
         assert ip_address(address) is not None, "Address is invalid."
         assert 0 <= port <= 65535, "The port must be between 0 and 65535."
