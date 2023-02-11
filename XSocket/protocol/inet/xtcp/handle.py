@@ -145,12 +145,12 @@ class XTCPHandle(IHandle):
             extend = size == 126
             if rsv != 0:
                 raise ValueError("header is invalid.")
+            packet.clear()
             if extend:
                 yield 2
                 size = unpack("!H", packet[2:])[0]
             else:
                 yield 0
-            packet.clear()
             yield size
             yield opcode
             if fin:

@@ -99,6 +99,14 @@ class XTCPListener(IListener):
         self._socket.listen()
         self._running = True
 
+    def close(self):
+        """
+        Closes the listener.
+        """
+        self._socket.close()
+        self._running = False
+        self._closed = True
+
     async def connect(self) -> XTCPHandle:
         """
         Establishes a connection to a remote host.
@@ -121,11 +129,3 @@ class XTCPListener(IListener):
         sock, addr = await self._event_loop.sock_accept(self._socket)
         sock.setblocking(False)
         return XTCPHandle(XTCPSocket(sock))
-
-    def close(self):
-        """
-        Closes the listener.
-        """
-        self._socket.close()
-        self._running = False
-        self._closed = True
