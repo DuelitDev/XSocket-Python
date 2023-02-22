@@ -60,6 +60,15 @@ class IListener(metaclass=ABCMeta):
         :return: ProtocolType
         """
 
+    @property
+    @abstractmethod
+    def pending(self) -> bool:
+        """
+        Determines if there are pending connection requests.
+
+        :return: bool
+        """
+
     @abstractmethod
     def run(self):
         """
@@ -78,6 +87,14 @@ class IListener(metaclass=ABCMeta):
         Establishes a connection to a remote host.
 
         :return: Handle
+        """
+
+    @abstractmethod
+    async def get_pending(self) -> AddressInfo:
+        """
+        Get address from pending connection requests.
+
+        :return: AddressInfo
         """
 
     @abstractmethod
