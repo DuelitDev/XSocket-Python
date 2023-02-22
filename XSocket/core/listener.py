@@ -90,14 +90,6 @@ class IListener(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def get_pending(self) -> AddressInfo:
-        """
-        Get address from pending connection requests.
-
-        :return: AddressInfo
-        """
-
-    @abstractmethod
     async def accept(self) -> IHandle:
         """
         Creates a new Handle for a newly created connection.
