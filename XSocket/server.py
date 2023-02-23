@@ -146,7 +146,7 @@ class Server:
                 await self._on_error(self, OnErrorEventArgs(e))
         await self._on_close(self, OnCloseEventArgs())
 
-    async def _collector(self, sender: Client, e):
+    async def _collector(self, sender: Client, _):
         if self._closed:
             return
         async with self._collector_lock:
