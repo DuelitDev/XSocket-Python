@@ -26,7 +26,7 @@ class OnMessageEventArgs(EventArgs):
         self._data = data
 
     @property
-    def client(self) -> bytearray:
+    def data(self) -> bytearray:
         return self._data[0]
 
 
