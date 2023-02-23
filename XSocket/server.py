@@ -154,5 +154,6 @@ class Server:
 
     async def broadcast(self, data: Union[bytes, bytearray],
                         opcode: OPCode = OPCode.Data):
+        tryinstance(data, (bytes, bytearray)) and tryinstance(opcode, OPCode)
         tasks = [client.send(data, opcode) for client in self._clients.values()]
         await gather(*tasks)

@@ -165,4 +165,5 @@ class Client:
 
     async def send(self, data: Union[bytes, bytearray],
                    opcode: OPCode = OPCode.Data):
+        tryinstance(data, (bytes, bytearray)) and tryinstance(opcode, OPCode)
         await self._handle.send(data, opcode)
