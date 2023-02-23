@@ -88,7 +88,8 @@ class XTCPHandle(IHandle):
         :param _close_socket: Whether to close the socket
         """
         if _close_socket:
-            return self._socket.close()
+            self._socket.close()
+            return
         await self.send(bytearray(), OPCode.ConnectionClose)
         self._closed = True
 
