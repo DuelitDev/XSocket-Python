@@ -1,7 +1,7 @@
 from asyncio import AbstractEventLoop, get_running_loop
 from typing import Optional, Tuple, Union
 from select import select
-from socket import SOCK_STREAM, SOL_SOCKET, SO_LINGER, socket
+from socket import SOCK_STREAM, SOL_SOCKET, SO_LINGER, SO_REUSEADDR, socket
 from struct import pack
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily
@@ -98,6 +98,7 @@ class XTCPListener(IListener):
         self._event_loop = get_running_loop()
         self._socket = socket(self.address_family, SOCK_STREAM)
         self._socket.setsockopt(SOL_SOCKET, SO_LINGER, pack("ii", 1, 0))
+        self._socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self._socket.setblocking(False)
         self._socket.bind((*self._address,))
         self._socket.listen()
@@ -120,6 +121,7 @@ class XTCPListener(IListener):
         self._event_loop = get_running_loop()
         sock = socket(self.address_family, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_LINGER, pack("ii", 1, 0))
+        sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         sock.setblocking(False)
         await self._event_loop.sock_connect(sock, (*self._address,))
         return XTCPHandle(XTCPSocket(sock))
