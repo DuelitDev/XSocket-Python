@@ -185,6 +185,6 @@ class XTCPHandle(IHandle):
                 await self._close(False)
                 raise OperationControl()
             elif opcode == OPCode.Continuation:
-                raise ConnectionResetError("Connection was reset by peer.")
+                raise BrokenPipeError("Connection was broken.")
             temp.append(bytearray())
         return bytearray(b"".join(temp))
