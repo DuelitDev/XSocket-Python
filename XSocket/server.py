@@ -1,96 +1,158 @@
-# XSocket (version: 0.0.2a)
-#
-# Copyright 2022. DuelitDev all rights reserved.
-#
-# This Library is distributed under the LGPL-2.1 License.
-
-from asyncio import Task, Lock, create_task
-from pyeventlib import EventHandler
-from typing import Dict
-from XSocket.core.handle import IHandle
+from asyncio import Task, Lock, create_task, gather
+from isinstancex import tryinstance
+from pyeventlib import EventHandler, EventArgs
+from typing import Dict, Union
+from XSocket.client import Client
 from XSocket.core.listener import IListener
-from XSocket.util import OperationControl
+from XSocket.core.net import AddressFamily, AddressInfo
+from XSocket.protocol.protocol import ProtocolType
+from XSocket.util import OPCode
 
 __all__ = [
     "Server"
 ]
 
 
-class ServerEventHandler:
-    def __init__(self, on_open: EventHandler, on_close: EventHandler,
-                 on_connect: EventHandler, on_disconnect: EventHandler,
-                 on_message: EventHandler, on_error: EventHandler):
+class OnOpenEventArgs(EventArgs):
+    pass
+
+
+class OnCloseEventArgs(EventArgs):
+    pass
+
+
+class OnAcceptEventArgs(EventArgs):
+    def __init__(self, client: Client):
+        self._client = client
+
+    @property
+    def client(self) -> Client:
+        return self._client
+
+
+class OnErrorEventArgs(EventArgs):
+    def __init__(self, exception: Exception):
+        self._exception = exception
+
+    @property
+    def exception(self) -> Exception:
+        return self._exception
+
+
+class ServerEventWrapper:
+    def __init__(self,
+                 on_open: EventHandler, on_close: EventHandler,
+                 on_accept: EventHandler, on_error: EventHandler):
         self.on_open: EventHandler = on_open
         self.on_close: EventHandler = on_close
-        self.on_connect: EventHandler = on_connect
-        self.on_disconnect: EventHandler = on_disconnect
-        self.on_message: EventHandler = on_message
+        self.on_accept: EventHandler = on_accept
         self.on_error: EventHandler = on_error
 
 
 class Server:
     def __init__(self, listener: IListener):
+        tryinstance(listener, IListener)
         self._listener: IListener = listener
-        self._handles: Dict[int, IHandle] = {}
+        self._clients: Dict[int, Client] = {}
         self._wrapper_lock: Lock = Lock()
         self._collector_lock: Lock = Lock()
+        self._running: bool = False
         self._closed: bool = False
         self._on_open: EventHandler = EventHandler()
         self._on_close: EventHandler = EventHandler()
-        self._on_connect: EventHandler = EventHandler()
-        self._on_disconnect: EventHandler = EventHandler()
-        self._on_message: EventHandler = EventHandler()
+        self._on_accept: EventHandler = EventHandler()
         self._on_error: EventHandler = EventHandler()
+        self._event_wrapper: ServerEventWrapper = ServerEventWrapper(
+            self._on_open, self._on_close, self._on_accept, self._on_error)
+
+    @property
+    def running(self) -> bool:
+        """
+        Gets a value indicating whether Server is running.
+
+        :return: bool
+        """
+        return self._running
+
+    @property
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether Server has been closed.
+
+        :return: bool
+        """
+        return self._closed
+
+    @property
+    def local_address(self) -> AddressInfo:
+        """
+        Gets the local endpoint.
+
+        :return: AddressInfo
+        """
+        return self._listener.local_address
+
+    @property
+    def address_family(self) -> AddressFamily:
+        """
+        Gets the address family of the Socket.
+
+        :return: AddressFamily
+        """
+        return self._listener.address_family
+
+    @property
+    def protocol_type(self) -> ProtocolType:
+        """
+        Gets the protocol type of the Listener.
+
+        :return: ProtocolType
+        """
+        return self._listener.protocol_type
+
+    @property
+    def event(self) -> ServerEventWrapper:
+        return self._event_wrapper
 
     async def run(self):
+        if self._running or self._closed:
+            raise RuntimeError("Server is already running or closed.")
+        self._running = True
         self._listener.run()
         create_task(self._wrapper())
 
     async def close(self):
+        if self._closed:
+            return
         self._closed = True
-        tasks = Task.all_tasks()
-        for task in tasks:
-            await task
+        await gather(*Task.all_tasks())
+        await gather(*[client.close() for client in self._clients.values()])
+        self._listener.close()
+        self._running = False
 
     async def _wrapper(self):
-        await self._on_open(self)
+        await self._on_open(self, OnOpenEventArgs())
         while not self._closed:
-            handle = await self._listener.accept()
-            cid = hash(handle)
-            async with self._wrapper_lock:
-                self._handles[cid] = handle
-            create_task(self._handler(cid))
-        await self._on_close(self)
-
-    async def _handler(self, cid: int):
-        handle = self._handles[cid]
-        await self._on_connect(self, cid)
-        while not self._closed and not handle.closed:
             try:
-                data = await handle.receive()
-                await self._on_message(self, cid, data)
-            except OperationControl:
-                pass
-            except (ConnectionAbortedError, ConnectionResetError):
-                break
+                handle = await self._listener.accept()
+                client = Client(handle)
+                client.event.on_close += self._collector
+                async with self._wrapper_lock:
+                    cid = id(client)
+                    self._clients[cid] = client
+                await client.run()
+                await self._on_accept(self, OnAcceptEventArgs(client))
             except Exception as e:
-                await self._on_error(self, e)
-                break
-        await self._on_disconnect(self, cid)
+                await self._on_error(self, OnErrorEventArgs(e))
+        await self._on_close(self, OnCloseEventArgs())
 
-    async def send(self, cid: int, *args, **kwargs):
-        await self._handles[cid].send(*args, **kwargs)
-
-    async def broadcast(self, *args, **kwargs):
-        for cid in self._handles:
-            await self.send(cid, *args, **kwargs)
-
-    async def disconnect(self, cid: int):
+    async def _collector(self, sender: Client, e):
+        if self._closed:
+            return
         async with self._collector_lock:
-            del self._handles[cid]
+            del self._clients[id(sender)]
 
-    @property
-    def event(self) -> ServerEventHandler:
-        return ServerEventHandler(self._on_open, self._on_close,
-                                  self._on_connect, self._on_disconnect,
-                                  self._on_message, self._on_error)
+    async def broadcast(self, data: Union[bytes, bytearray],
+                        opcode: OPCode = OPCode.Data):
+        tasks = [client.send(data, opcode) for client in self._clients.values()]
+        await gather(*tasks)
