@@ -1,4 +1,4 @@
-from asyncio import Task, Lock, create_task, gather
+from asyncio import Lock, create_task, gather, all_tasks
 from isinstancex import tryinstance
 from pyeventlib import EventHandler, EventArgs
 from typing import Dict, Union
@@ -125,7 +125,7 @@ class Server:
         if self._closed:
             return
         self._closed = True
-        await gather(*Task.all_tasks())
+        await gather(*all_tasks())
         await gather(*[client.close() for client in self._clients.values()])
         self._listener.close()
         self._running = False

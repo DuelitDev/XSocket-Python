@@ -1,4 +1,4 @@
-from asyncio import Task, create_task, gather
+from asyncio import create_task, gather, all_tasks
 from isinstancex import tryinstance
 from pyeventlib import EventHandler, EventArgs
 from typing import Union, Optional, List
@@ -142,7 +142,7 @@ class Client:
         if self._closed:
             return
         await self._handle.close()
-        await gather(*Task.all_tasks())
+        await gather(*all_tasks())
         self._closed = True
         self._running = False
 
