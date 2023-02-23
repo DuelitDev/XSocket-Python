@@ -76,7 +76,7 @@ class XTCPListener(IListener):
     @property
     def protocol_type(self) -> ProtocolType:
         """
-        Gets the protocol type of the Socket.
+        Gets the protocol type of the Listener.
 
         :return: ProtocolType
         """
