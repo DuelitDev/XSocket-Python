@@ -35,6 +35,15 @@ class IListener(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def pending(self) -> bool:
+        """
+        Determines if there are pending connection requests.
+
+        :return: bool
+        """
+
+    @property
+    @abstractmethod
     def local_address(self) -> AddressInfo:
         """
         Gets the local endpoint.
@@ -58,15 +67,6 @@ class IListener(metaclass=ABCMeta):
         Gets the protocol type of the Listener.
 
         :return: ProtocolType
-        """
-
-    @property
-    @abstractmethod
-    def pending(self) -> bool:
-        """
-        Determines if there are pending connection requests.
-
-        :return: bool
         """
 
     @abstractmethod

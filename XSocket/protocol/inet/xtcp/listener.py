@@ -60,6 +60,15 @@ class XTCPListener(IListener):
         return self._closed
 
     @property
+    def pending(self) -> bool:
+        """
+        Determines if there are pending connection requests.
+
+        :return: bool
+        """
+        return bool(select([self._socket], [], [], 0)[0])
+
+    @property
     def local_address(self) -> IPAddressInfo:
         """
         Gets the local endpoint.
@@ -85,15 +94,6 @@ class XTCPListener(IListener):
         :return: ProtocolType
         """
         return ProtocolType.Xtcp
-
-    @property
-    def pending(self) -> bool:
-        """
-        Determines if there are pending connection requests.
-
-        :return: bool
-        """
-        return bool(select([self._socket], [], [], 0)[0])
 
     def run(self):
         """
