@@ -5,6 +5,7 @@ from typing import Union, Optional, List
 from XSocket.core.handle import IHandle
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily, AddressInfo
+from XSocket.exception import *
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OperationControl, OPCode
 
@@ -52,7 +53,8 @@ class Client:
     def __init__(self, initializer: Union[IListener, IHandle]):
         self._listener: Optional[IListener] = None
         self._handle: Optional[IHandle] = None
-        tryinstance(initializer, (IListener, IHandle))
+        tryinstance(initializer, (IListener, IHandle),
+                    InvalidParameterException)
         if isinstance(initializer, IListener):
             self._listener = initializer
         elif isinstance(initializer, IHandle):
@@ -103,7 +105,7 @@ class Client:
         :return: AddressInfo
         """
         if not self._running:
-            raise RuntimeError("Client is not connected.")
+            raise InvalidOperationException("Client is not connected.")
         return self._handle.remote_address
 
     @property
@@ -134,7 +136,8 @@ class Client:
 
     async def run(self):
         if self._running or self._closed:
-            raise RuntimeError("Client is already running or closed.")
+            raise InvalidOperationException(
+                "Client is already running or closed.")
         self._running = True
         create_task(self._handler())
 
@@ -165,5 +168,6 @@ class Client:
 
     async def send(self, data: Union[bytes, bytearray],
                    opcode: OPCode = OPCode.Data):
-        tryinstance(data, (bytes, bytearray)) and tryinstance(opcode, OPCode)
+        tryinstance(data, (bytes, bytearray), InvalidParameterException)
+        tryinstance(opcode, OPCode, InvalidParameterException)
         await self._handle.send(data, opcode)

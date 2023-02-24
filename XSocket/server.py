@@ -5,6 +5,7 @@ from typing import Dict, Union
 from XSocket.client import Client
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily, AddressInfo
+from XSocket.exception import *
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode
 
@@ -116,7 +117,8 @@ class Server:
 
     async def run(self):
         if self._running or self._closed:
-            raise RuntimeError("Server is already running or closed.")
+            raise InvalidOperationException(
+                "Server is already running or closed.")
         self._running = True
         self._listener.run()
         create_task(self._wrapper())

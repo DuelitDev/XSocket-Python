@@ -1,7 +1,8 @@
 from ipaddress import ip_address
-from isinstancex import isinstancex
+from isinstancex import tryinstance
 from pyfieldlib import fields
 from typing import Iterator, Union
+from XSocket.exception import *
 from XSocket.core.net import AddressFamily, AddressInfo
 
 __all__ = [
@@ -15,9 +16,13 @@ class IPAddressInfo(AddressInfo):
     """
 
     def __init__(self, address: str, port: int):
-        isinstancex(address, str) and isinstancex(port, int)
-        assert ip_address(address) is not None, "Address is invalid."
-        assert 0 <= port <= 65535, "The port must be between 0 and 65535."
+        tryinstance(address, str, InvalidParameterException)
+        tryinstance(port, int, InvalidParameterException)
+        if not ip_address(address) is not None:
+            raise InvalidParameterException("Address is invalid.")
+        if not 0 <= port <= 65535:
+            raise InvalidParameterException(
+                "The port must be between 0 and 65535.")
         self._address: str = address
         self._port: int = port
 

@@ -3,6 +3,7 @@ from struct import pack, unpack
 from typing import Generator, List, Union
 from XSocket.core.handle import IHandle
 from XSocket.core.net import AddressFamily
+from XSocket.exception import *
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.inet.net import IPAddressInfo
 from XSocket.protocol.inet.xtcp.socket import XTCPSocket
@@ -139,7 +140,7 @@ class XTCPHandle(IHandle):
             size = 127 & packet[1]
             extend = size == 126
             if rsv != 0:
-                raise ValueError("header is invalid.")
+                raise BrokenPipeException("header is invalid.")
             packet.clear()
             if extend:
                 yield 2
@@ -181,11 +182,11 @@ class XTCPHandle(IHandle):
             if opcode == OPCode.ConnectionClose or self._closed:
                 if self._closed and opcode == OPCode.ConnectionClose:
                     await self._close(True)
-                    raise ConnectionAbortedError(
+                    raise ConnectionAbortedException(
                         "Connection was aborted by peer.")
                 await self._close(False)
                 raise OperationControl()
             elif opcode == OPCode.Continuation:
-                raise BrokenPipeError("Connection was broken.")
+                raise BrokenPipeException("Connection was broken.")
             temp.append(bytearray())
         return bytearray(b"".join(temp))
