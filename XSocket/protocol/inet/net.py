@@ -18,7 +18,7 @@ class IPAddressInfo(AddressInfo):
     def __init__(self, address: str, port: int):
         tryinstance(address, str, InvalidParameterException)
         tryinstance(port, int, InvalidParameterException)
-        if not ip_address(address) is not None:
+        if ip_address(address) is None:
             raise InvalidParameterException("Address is invalid.")
         if not 0 <= port <= 65535:
             raise InvalidParameterException(
