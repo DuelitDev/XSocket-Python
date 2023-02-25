@@ -114,6 +114,8 @@ class XTCPListener(IListener):
         """
         Closes the listener.
         """
+        if not self._running:
+            raise InvalidOperationException("Listener in not running.")
         self._socket.close()
         self._running = False
         self._closed = True
