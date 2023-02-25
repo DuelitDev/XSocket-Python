@@ -140,7 +140,7 @@ class XTCPHandle(IHandle):
             size = 127 & packet[1]
             extend = size == 126
             if rsv != 0:
-                raise BrokenPipeException("header is invalid.")
+                raise BrokenPipeException()
             packet.clear()
             if extend:
                 yield 2
@@ -182,11 +182,10 @@ class XTCPHandle(IHandle):
             if opcode == OPCode.ConnectionClose or self._closed:
                 if self._closed and opcode == OPCode.ConnectionClose:
                     await self._close(True)
-                    raise ConnectionAbortedException(
-                        "Connection was aborted by peer.")
+                    raise ConnectionAbortedException()
                 await self._close(False)
                 raise OperationControl()
             elif opcode == OPCode.Continuation:
-                raise BrokenPipeException("Connection was broken.")
+                raise BrokenPipeException()
             temp.append(bytearray())
         return bytearray(b"".join(temp))
