@@ -66,6 +66,8 @@ class XTCPListener(IListener):
 
         :return: bool
         """
+        if not self._running:
+            raise InvalidOperationException("Listener in not running.")
         return bool(select([self._socket], [], [], 0)[0])
 
     @property
@@ -136,6 +138,8 @@ class XTCPListener(IListener):
 
         :return: XTCPHandle
         """
+        if not self._running:
+            raise InvalidOperationException("Listener in not running.")
         sock, addr = await self._event_loop.sock_accept(self._socket)
         sock.setblocking(False)
         return XTCPHandle(XTCPSocket(sock))
