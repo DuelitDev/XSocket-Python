@@ -43,10 +43,46 @@ class OnErrorEventArgs(EventArgs):
 class ClientEventWrapper:
     def __init__(self, on_open: EventHandler, on_close: EventHandler,
                  on_message: EventHandler, on_error: EventHandler):
-        self.on_open: EventHandler = on_open
-        self.on_close: EventHandler = on_close
-        self.on_message: EventHandler = on_message
-        self.on_error: EventHandler = on_error
+        self._on_open: EventHandler = on_open
+        self._on_close: EventHandler = on_close
+        self._on_message: EventHandler = on_message
+        self._on_error: EventHandler = on_error
+
+    @property
+    def on_open(self) -> EventHandler:
+        """
+        An event handler that callback when the client is opened.
+
+        :return: EventHandler
+        """
+        return self._on_open
+
+    @property
+    def on_close(self) -> EventHandler:
+        """
+        An event handler that callback when the client is closed.
+
+        :return: EventHandler
+        """
+        return self._on_close
+
+    @property
+    def on_message(self) -> EventHandler:
+        """
+        An event handler that callback when message received from the client.
+
+        :return: EventHandler
+        """
+        return self._on_message
+
+    @property
+    def on_error(self) -> EventHandler:
+        """
+        An event handler that callback when error raised from the client.
+
+        :return: EventHandler
+        """
+        return self._on_error
 
 
 class Client:

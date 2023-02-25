@@ -44,10 +44,47 @@ class ServerEventWrapper:
     def __init__(self,
                  on_open: EventHandler, on_close: EventHandler,
                  on_accept: EventHandler, on_error: EventHandler):
-        self.on_open: EventHandler = on_open
-        self.on_close: EventHandler = on_close
-        self.on_accept: EventHandler = on_accept
-        self.on_error: EventHandler = on_error
+        self._on_open: EventHandler = on_open
+        self._on_close: EventHandler = on_close
+        self._on_accept: EventHandler = on_accept
+        self._on_error: EventHandler = on_error
+
+    @property
+    def on_open(self) -> EventHandler:
+        """
+        An event handler that callback when the server is opened.
+
+        :return: EventHandler
+        """
+        return self._on_open
+
+    @property
+    def on_close(self) -> EventHandler:
+        """
+        An event handler that callback when the server is closed.
+
+        :return: EventHandler
+        """
+        return self._on_close
+
+    @property
+    def on_accept(self) -> EventHandler:
+        """
+        This is an event handler that callback
+        when connection with client is established.
+
+        :return: EventHandler
+        """
+        return self._on_accept
+
+    @property
+    def on_error(self) -> EventHandler:
+        """
+        An event handler that callback when error raised from the server.
+
+        :return: EventHandler
+        """
+        return self._on_error
 
 
 class Server:
