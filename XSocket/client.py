@@ -41,12 +41,11 @@ class OnErrorEventArgs(EventArgs):
 
 
 class ClientEventWrapper:
-    def __init__(self, on_open: EventHandler, on_close: EventHandler,
-                 on_message: EventHandler, on_error: EventHandler):
-        self._on_open: EventHandler = on_open
-        self._on_close: EventHandler = on_close
-        self._on_message: EventHandler = on_message
-        self._on_error: EventHandler = on_error
+    def __init__(self):
+        self._on_open: EventHandler = EventHandler()
+        self._on_close: EventHandler = EventHandler()
+        self._on_message: EventHandler = EventHandler()
+        self._on_error: EventHandler = EventHandler()
 
     @property
     def on_open(self) -> EventHandler:
@@ -78,11 +77,51 @@ class ClientEventWrapper:
     @property
     def on_error(self) -> EventHandler:
         """
-        An event handler that callback when error raised from the client.
+        An event handler that callback when error raised.
 
         :return: EventHandler
         """
         return self._on_error
+
+    @on_open.setter
+    def on_open(self, handler: EventHandler):
+        """
+        An event handler that callback when the server is opened.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_open = handler
+
+    @on_close.setter
+    def on_close(self, handler: EventHandler):
+        """
+        An event handler that callback when the server is closed.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_close = handler
+
+    @on_message.setter
+    def on_message(self, handler: EventHandler):
+        """
+        An event handler that callback when message received from the client.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_message = handler
+
+    @on_error.setter
+    def on_error(self, handler: EventHandler):
+        """
+        An event handler that callback when error raised.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_error = handler
 
 
 class Client:
@@ -97,12 +136,7 @@ class Client:
             self._handle = initializer
         self._running: bool = False
         self._closed: bool = False
-        self._on_open: EventHandler = EventHandler()
-        self._on_close: EventHandler = EventHandler()
-        self._on_message: EventHandler = EventHandler()
-        self._on_error: EventHandler = EventHandler()
-        self._event_wrapper: ClientEventWrapper = ClientEventWrapper(
-            self._on_open, self._on_close, self._on_message, self._on_error)
+        self._event: ClientEventWrapper = ClientEventWrapper()
 
     @property
     def running(self) -> bool:
@@ -168,7 +202,7 @@ class Client:
 
     @property
     def event(self) -> ClientEventWrapper:
-        return self._event_wrapper
+        return self._event
 
     async def run(self):
         if self._running or self._closed:
@@ -188,19 +222,19 @@ class Client:
     async def _handler(self):
         if not self._handle:
             self._handle = await self._listener.connect()
-            await self._on_open(self, OnOpenEventArgs())
+            await self.event.on_open(self, OnOpenEventArgs())
         while not self._closed:
             try:
                 data = [await self._handle.receive()]
-                await self._on_message(self, OnMessageEventArgs(data))
+                await self.event.on_message(self, OnMessageEventArgs(data))
             except OperationControl:
                 pass
             except ConnectionError:
                 break
             except Exception as e:
-                await self._on_error(self, OnErrorEventArgs(e))
+                await self.event.on_error(self, OnErrorEventArgs(e))
                 break
-        await self._on_close(self, OnCloseEventArgs())
+        await self.event.on_close(self, OnCloseEventArgs())
 
     async def send(self, data: Union[bytes, bytearray],
                    opcode: OPCode = OPCode.Data):

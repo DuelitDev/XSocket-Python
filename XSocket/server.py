@@ -41,13 +41,11 @@ class OnErrorEventArgs(EventArgs):
 
 
 class ServerEventWrapper:
-    def __init__(self,
-                 on_open: EventHandler, on_close: EventHandler,
-                 on_accept: EventHandler, on_error: EventHandler):
-        self._on_open: EventHandler = on_open
-        self._on_close: EventHandler = on_close
-        self._on_accept: EventHandler = on_accept
-        self._on_error: EventHandler = on_error
+    def __init__(self):
+        self._on_open: EventHandler = EventHandler()
+        self._on_close: EventHandler = EventHandler()
+        self._on_accept: EventHandler = EventHandler()
+        self._on_error: EventHandler = EventHandler()
 
     @property
     def on_open(self) -> EventHandler:
@@ -80,11 +78,52 @@ class ServerEventWrapper:
     @property
     def on_error(self) -> EventHandler:
         """
-        An event handler that callback when error raised from the server.
+        An event handler that callback when error raised.
 
         :return: EventHandler
         """
         return self._on_error
+
+    @on_open.setter
+    def on_open(self, handler: EventHandler):
+        """
+        An event handler that callback when the server is opened.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_open = handler
+
+    @on_close.setter
+    def on_close(self, handler: EventHandler):
+        """
+        An event handler that callback when the server is closed.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_close = handler
+
+    @on_accept.setter
+    def on_accept(self, handler: EventHandler):
+        """
+        This is an event handler that callback
+        when connection with client is established.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_accept = handler
+
+    @on_error.setter
+    def on_error(self, handler: EventHandler):
+        """
+        An event handler that callback when error raised.
+
+        :return: EventHandler
+        """
+        tryinstance(handler, EventHandler, InvalidParameterException)
+        self._on_error = handler
 
 
 class Server:
@@ -96,12 +135,7 @@ class Server:
         self._collector_lock: Lock = Lock()
         self._running: bool = False
         self._closed: bool = False
-        self._on_open: EventHandler = EventHandler()
-        self._on_close: EventHandler = EventHandler()
-        self._on_accept: EventHandler = EventHandler()
-        self._on_error: EventHandler = EventHandler()
-        self._event_wrapper: ServerEventWrapper = ServerEventWrapper(
-            self._on_open, self._on_close, self._on_accept, self._on_error)
+        self._event: ServerEventWrapper = ServerEventWrapper()
 
     @property
     def running(self) -> bool:
@@ -150,7 +184,7 @@ class Server:
 
     @property
     def event(self) -> ServerEventWrapper:
-        return self._event_wrapper
+        return self._event
 
     async def run(self):
         if self._running or self._closed:
@@ -170,7 +204,7 @@ class Server:
         self._running = False
 
     async def _wrapper(self):
-        await self._on_open(self, OnOpenEventArgs())
+        await self.event.on_open(self, OnOpenEventArgs())
         while not self._closed:
             try:
                 handle = await self._listener.accept()
@@ -180,10 +214,10 @@ class Server:
                     cid = id(client)
                     self._clients[cid] = client
                 await client.run()
-                await self._on_accept(self, OnAcceptEventArgs(client))
+                await self.event.on_accept(self, OnAcceptEventArgs(client))
             except Exception as e:
-                await self._on_error(self, OnErrorEventArgs(e))
-        await self._on_close(self, OnCloseEventArgs())
+                await self.event.on_error(self, OnErrorEventArgs(e))
+        await self.event.on_close(self, OnCloseEventArgs())
 
     async def _collector(self, sender: Client, _):
         if self._closed:
