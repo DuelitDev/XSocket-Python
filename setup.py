@@ -7,7 +7,7 @@ with open("README.md", "r") as file:
 
 setup(
     name="XSocket",
-    version="0.0.1a",
+    version="0.0.1a1",
     description="Cross-Language Socket",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -17,12 +17,10 @@ setup(
     maintainer_email="jyoon07dev@gmail.com",
     url="https://github.com/DuelitDev/XSocket-Python",
     packages=find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     keywords=["socket"],
     classifiers=[
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
+        "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
     ],
