@@ -1,13 +1,11 @@
-from asyncio import create_task, gather, all_tasks
-from isinstancex import tryinstance
-from pyeventlib import EventHandler, EventArgs
-from typing import Union, Optional, List
+from asyncio import Task, create_task
+from pyeventlib import EventArgs, EventHandler
 from XSocket.core.handle import IHandle
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily, AddressInfo
-from XSocket.exception import *
+from XSocket.exception import InvalidOperationException
 from XSocket.protocol.protocol import ProtocolType
-from XSocket.util import OperationControl, OPCode
+from XSocket.util import OPCode, OperationControl
 
 __all__ = [
     "Client"
@@ -23,7 +21,7 @@ class OnCloseEventArgs(EventArgs):
 
 
 class OnMessageEventArgs(EventArgs):
-    def __init__(self, data: List[bytearray]):
+    def __init__(self, data: list[bytearray]):
         self._data = data
 
     @property
@@ -90,7 +88,6 @@ class ClientEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_open = handler
 
     @on_close.setter
@@ -100,7 +97,6 @@ class ClientEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_close = handler
 
     @on_message.setter
@@ -110,7 +106,6 @@ class ClientEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_message = handler
 
     @on_error.setter
@@ -120,20 +115,18 @@ class ClientEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_error = handler
 
 
 class Client:
-    def __init__(self, initializer: Union[IListener, IHandle]):
-        self._listener: Optional[IListener] = None
-        self._handle: Optional[IHandle] = None
-        tryinstance(initializer, (IListener, IHandle),
-                    InvalidParameterException)
+    def __init__(self, initializer: IListener | IHandle):
+        self._listener: IListener | None = None
+        self._handle: IHandle | None = None
         if isinstance(initializer, IListener):
             self._listener = initializer
         elif isinstance(initializer, IHandle):
             self._handle = initializer
+        self._task: Task | None = None
         self._running: bool = False
         self._closed: bool = False
         self._event: ClientEventWrapper = ClientEventWrapper()
@@ -209,13 +202,13 @@ class Client:
             raise InvalidOperationException(
                 "Client is already running or closed.")
         self._running = True
-        create_task(self._handler())
+        self._task = create_task(self._handler())
 
     async def close(self):
         if self._closed:
             return
         await self._handle.close()
-        await gather(*all_tasks())
+        await self._task
         self._closed = True
         self._running = False
 
@@ -236,8 +229,8 @@ class Client:
                 break
         await self.event.on_close(self, OnCloseEventArgs())
 
-    async def send(self, data: Union[bytes, bytearray],
-                   opcode: OPCode = OPCode.Data):
-        tryinstance(data, (bytes, bytearray), InvalidParameterException)
-        tryinstance(opcode, OPCode, InvalidParameterException)
+    async def send(self, data: bytes | bytearray, opcode: OPCode = OPCode.Data):
         await self._handle.send(data, opcode)
+
+    async def send_string(self, string: str, encoding: str = "UTF-8"):
+        await self.send(string.encode(encoding), OPCode.Data)

@@ -1,13 +1,15 @@
 from asyncio import AbstractEventLoop, get_running_loop
 from struct import pack, unpack
-from typing import Generator, List, Union
+from typing import Any, Generator
 from XSocket.core.handle import IHandle
 from XSocket.core.net import AddressFamily
-from XSocket.exception import *
+from XSocket.exception import (ConnectionAbortedException,
+                               HandleClosedException,
+                               InvalidOperationException)
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.inet.net import IPAddressInfo
 from XSocket.protocol.inet.xtcp.socket import XTCPSocket
-from XSocket.util import OPCode, OperationControl
+from XSocket.util import OPCode
 
 __all__ = [
     "XTCPHandle"
@@ -94,8 +96,8 @@ class XTCPHandle(IHandle):
         await self.send(bytearray(), OPCode.ConnectionClose)
         self._closed = True
 
-    def pack(self, data: bytearray, opcode: OPCode = OPCode.Data
-             ) -> Generator[bytearray, None, None]:
+    @staticmethod
+    def pack(data: bytearray, opcode: OPCode) -> Generator[bytearray, Any, Any]:
         """
         Generates a packet to be transmitted.
 
@@ -119,7 +121,8 @@ class XTCPHandle(IHandle):
                 yield header + segment
             yield bytearray([fin | OPCode.Continuation, 0])
 
-    def unpack(self, packets: List[bytearray]) -> Generator[int, None, None]:
+    @staticmethod
+    def unpack(packets: list[bytearray]) -> Generator[int, Any, Any]:
         """
         Read the header of the received packet and get the data.
 
@@ -140,26 +143,27 @@ class XTCPHandle(IHandle):
             size = 127 & packet[1]
             extend = size == 126
             if rsv != 0:
-                raise BrokenPipeException()
-            packet.clear()
+                raise InvalidOperationException()
             if extend:
                 yield 2
                 size = unpack("!H", packet[2:])[0]
             else:
                 yield 0
+            packet.clear()
             yield size
             yield opcode
             if fin:
                 break
 
-    async def send(self, data: Union[bytes, bytearray],
-                   opcode: OPCode = OPCode.Data):
+    async def send(self, data: bytes | bytearray, opcode: OPCode):
         """
         Sends data to a connected Socket.
 
         :param data: Data to send
         :param opcode: Operation Code
         """
+        if self._closed:
+            raise HandleClosedException()
         for packet in self.pack(bytearray(data), opcode):
             await self._socket.send(packet)
 
@@ -169,6 +173,8 @@ class XTCPHandle(IHandle):
 
         :return: Received data
         """
+        if self._closed:
+            raise HandleClosedException()
         opcode = None
         temp = [bytearray()]
         counter = 0
@@ -180,12 +186,9 @@ class XTCPHandle(IHandle):
             if opcode is None:
                 opcode = packet
             if opcode == OPCode.ConnectionClose or self._closed:
-                if self._closed and opcode == OPCode.ConnectionClose:
-                    await self._close(True)
-                    raise ConnectionAbortedException()
-                await self._close(False)
-                raise OperationControl()
+                await self._close(True)
+                raise ConnectionAbortedException()
             elif opcode == OPCode.Continuation:
-                raise BrokenPipeException()
+                raise InvalidOperationException()
             temp.append(bytearray())
         return bytearray(b"".join(temp))

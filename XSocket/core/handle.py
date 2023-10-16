@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Generator, List, Union
+from typing import Any, Generator
 from XSocket.core.net import AddressFamily, AddressInfo
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode
@@ -66,9 +66,9 @@ class IHandle(metaclass=ABCMeta):
         Closes the Socket connection.
         """
 
+    @staticmethod
     @abstractmethod
-    def pack(self, data: bytearray, opcode: OPCode
-             ) -> Generator[bytearray, None, None]:
+    def pack(data: bytearray, opcode: OPCode) -> Generator[bytearray, Any, Any]:
         """
         Generates a packet to be transmitted.
 
@@ -77,8 +77,9 @@ class IHandle(metaclass=ABCMeta):
         :return: Packet generator
         """
 
+    @staticmethod
     @abstractmethod
-    def unpack(self, packets: List[bytearray]) -> Generator[int, None, None]:
+    def unpack(packets: list[bytearray]) -> Generator[int, Any, Any]:
         """
         Read the header of the received packet and get the data.
 
@@ -87,8 +88,7 @@ class IHandle(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def send(self, data: Union[bytes, bytearray],
-                   opcode: OPCode = OPCode.Data):
+    async def send(self, data: bytes | bytearray, opcode: OPCode):
         """
         Sends data to a connected Socket.
 

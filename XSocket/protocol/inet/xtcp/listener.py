@@ -1,12 +1,10 @@
 from asyncio import AbstractEventLoop, get_running_loop
-from isinstancex import tryinstancex
-from typing import Optional, Tuple, Union
 from select import select
 from socket import SOCK_STREAM, SOL_SOCKET, SO_LINGER, SO_REUSEADDR, socket
 from struct import pack
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily
-from XSocket.exception import *
+from XSocket.exception import InvalidOperationException
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.inet.net import IPAddressInfo
 from XSocket.protocol.inet.xtcp.handle import XTCPHandle
@@ -22,20 +20,18 @@ class XTCPListener(IListener):
     Listens for connections from TCP network clients.
     """
 
-    def __init__(self, address: Union[IPAddressInfo, Tuple[str, int]]):
+    def __init__(self, address: IPAddressInfo | tuple[str, int]):
         """
         Listens for connections from TCP network clients.
 
         :param address: Local address
         """
         super().__init__()
-        tryinstancex(address, Union[IPAddressInfo, Tuple[str, int]],
-                     InvalidParameterException)
         if isinstance(address, tuple):
             address = IPAddressInfo(address[0], address[1])
         self._address: IPAddressInfo = address
-        self._socket: Optional[socket] = None
-        self._event_loop: Optional[AbstractEventLoop] = None
+        self._socket: socket | None = None
+        self._event_loop: AbstractEventLoop | None = None
         self._running: bool = False
         self._closed: bool = False
 

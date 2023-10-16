@@ -6,13 +6,9 @@ class InvalidOperationException(RuntimeError):
     pass
 
 
+class HandleClosedException(Exception):
+    pass
+
+
 class ConnectionAbortedException(ConnectionAbortedError):
-    pass
-
-
-class ConnectionResetException(ConnectionResetError):
-    pass
-
-
-class BrokenPipeException(BrokenPipeError):
     pass

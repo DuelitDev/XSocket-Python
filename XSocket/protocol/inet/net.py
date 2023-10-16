@@ -1,8 +1,7 @@
 from ipaddress import ip_address
-from isinstancex import tryinstance
 from pyfieldlib import fields
-from typing import Iterator, Union
-from XSocket.exception import *
+from typing import Iterator
+from XSocket.exception import InvalidParameterException
 from XSocket.core.net import AddressFamily, AddressInfo
 
 __all__ = [
@@ -16,8 +15,6 @@ class IPAddressInfo(AddressInfo):
     """
 
     def __init__(self, address: str, port: int):
-        tryinstance(address, str, InvalidParameterException)
-        tryinstance(port, int, InvalidParameterException)
         if ip_address(address) is None:
             raise InvalidParameterException("Address is invalid.")
         if not 0 <= port <= 65535:
@@ -76,7 +73,7 @@ class IPAddressInfo(AddressInfo):
         else:
             return AddressFamily.InterNetworkV6
 
-    def __iter__(self) -> Iterator[Union[str, int]]:
+    def __iter__(self) -> Iterator[str | int]:
         """
         Gets the IP address and port number of the AddressInfo as an iterator.
 

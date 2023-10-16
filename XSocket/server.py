@@ -1,7 +1,5 @@
-from asyncio import Lock, create_task, gather, all_tasks
-from isinstancex import tryinstance
+from asyncio import Task, Lock, create_task, gather
 from pyeventlib import EventHandler, EventArgs
-from typing import Dict, Union
 from XSocket.client import Client
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily, AddressInfo
@@ -91,7 +89,6 @@ class ServerEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_open = handler
 
     @on_close.setter
@@ -101,7 +98,6 @@ class ServerEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_close = handler
 
     @on_accept.setter
@@ -112,7 +108,6 @@ class ServerEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_accept = handler
 
     @on_error.setter
@@ -122,17 +117,16 @@ class ServerEventWrapper:
 
         :return: EventHandler
         """
-        tryinstance(handler, EventHandler, InvalidParameterException)
         self._on_error = handler
 
 
 class Server:
     def __init__(self, listener: IListener):
-        tryinstance(listener, IListener)
         self._listener: IListener = listener
-        self._clients: Dict[int, Client] = {}
+        self._clients: dict[int, Client] = {}
         self._wrapper_lock: Lock = Lock()
         self._collector_lock: Lock = Lock()
+        self._task: Task | None = None
         self._running: bool = False
         self._closed: bool = False
         self._event: ServerEventWrapper = ServerEventWrapper()
@@ -192,13 +186,13 @@ class Server:
                 "Server is already running or closed.")
         self._running = True
         self._listener.run()
-        create_task(self._wrapper())
+        self._task = create_task(self._wrapper())
 
     async def close(self):
         if self._closed:
             return
         self._closed = True
-        await gather(*all_tasks())
+        await self._task
         await gather(*[client.close() for client in self._clients.values()])
         self._listener.close()
         self._running = False
@@ -220,13 +214,13 @@ class Server:
         await self.event.on_close(self, OnCloseEventArgs())
 
     async def _collector(self, sender: Client, _):
-        if self._closed:
-            return
         async with self._collector_lock:
             del self._clients[id(sender)]
 
-    async def broadcast(self, data: Union[bytes, bytearray],
+    async def broadcast(self, data: bytes | bytearray,
                         opcode: OPCode = OPCode.Data):
-        tryinstance(data, (bytes, bytearray)) and tryinstance(opcode, OPCode)
         tasks = [client.send(data, opcode) for client in self._clients.values()]
         await gather(*tasks)
+
+    async def broadcast_string(self, string: str, encoding: str = "UTF-8"):
+        await self.broadcast(string.encode(encoding), OPCode.Data)
