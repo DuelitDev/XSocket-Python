@@ -1,5 +1,4 @@
 from pyeventlib import EventArgs
-from XSocket.client import Client
 
 
 __all__ = [
@@ -20,11 +19,11 @@ class OnCloseEventArgs(EventArgs):
 
 
 class OnAcceptEventArgs(EventArgs):
-    def __init__(self, client: Client):
+    def __init__(self, client: "Client"):
         self._client = client
 
     @property
-    def client(self) -> Client:
+    def client(self) -> "Client":
         return self._client
 
 

@@ -7,7 +7,7 @@ with open("README.md", "r") as file:
 
 setup(
     name="XSocket",
-    version="0.0.1a2",
+    version="0.0.1a3",
     description="Cross-Language Socket",
     long_description=long_description,
     long_description_content_type="text/markdown",
