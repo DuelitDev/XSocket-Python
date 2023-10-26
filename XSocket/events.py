@@ -19,11 +19,11 @@ class OnCloseEventArgs(EventArgs):
 
 
 class OnAcceptEventArgs(EventArgs):
-    def __init__(self, client: "Client"):
+    def __init__(self, client):
         self._client = client
 
     @property
-    def client(self) -> "Client":
+    def client(self):
         return self._client
 
 

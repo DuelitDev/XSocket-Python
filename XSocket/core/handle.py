@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Generator
 from XSocket.core.net import AddressFamily, AddressInfo
-from XSocket.core.socket import ISocket
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode
 
