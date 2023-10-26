@@ -12,6 +12,26 @@ class ISocket(metaclass=ABCMeta):
     Implements sockets interface.
     """
 
+    @staticmethod
+    @abstractmethod
+    async def create(address: AddressInfo) -> "ISocket":
+        """
+        Create a new Socket with the address info.
+
+        :param address: AddressInfo
+        :return: ISocket
+        """
+
+    @property
+    @abstractmethod
+    def closed(self) -> bool:
+        """
+        Gets a value indicating whether
+        the Socket for a Socket has been closed.
+
+        :return: bool
+        """
+
     @property
     @abstractmethod
     def get_raw_socket(self) -> Any:

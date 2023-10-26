@@ -6,7 +6,27 @@ class InvalidOperationException(RuntimeError):
     pass
 
 
-class HandleClosedException(Exception):
+class ClosedException(Exception):
+    pass
+
+
+class SocketClosedException(ClosedException):
+    pass
+
+
+class HandleClosedException(ClosedException):
+    pass
+
+
+class ListenerClosedException(ClosedException):
+    pass
+
+
+class ServerClosedException(ClosedException):
+    pass
+
+
+class ClientClosedException(ClosedException):
     pass
 
 

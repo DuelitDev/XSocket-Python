@@ -4,7 +4,7 @@ from socket import SOCK_STREAM, SOL_SOCKET, SO_LINGER, SO_REUSEADDR, socket
 from struct import pack
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily
-from XSocket.exception import InvalidOperationException
+from XSocket.exception import ListenerClosedException
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.protocol.inet.net import IPAddressInfo
 from XSocket.protocol.inet.xtcp.handle import XTCPHandle
@@ -26,7 +26,6 @@ class XTCPListener(IListener):
 
         :param address: Local address
         """
-        super().__init__()
         if isinstance(address, tuple):
             address = IPAddressInfo(address[0], address[1])
         self._address: IPAddressInfo = address
@@ -62,8 +61,8 @@ class XTCPListener(IListener):
 
         :return: bool
         """
-        if not self._running:
-            raise InvalidOperationException("Listener in not running.")
+        if not self._running or self._closed:
+            raise ListenerClosedException()
         return bool(select([self._socket], [], [], 0)[0])
 
     @property
@@ -97,6 +96,8 @@ class XTCPListener(IListener):
         """
         Starts listening for incoming connection requests.
         """
+        if self._running or self._closed:
+            return
         self._event_loop = get_running_loop()
         self._socket = socket(self.address_family, SOCK_STREAM)
         self._socket.setsockopt(SOL_SOCKET, SO_LINGER, pack("ii", 1, 0))
@@ -110,9 +111,10 @@ class XTCPListener(IListener):
         """
         Closes the listener.
         """
-        if not self._running:
-            raise InvalidOperationException("Listener in not running.")
-        self._socket.close()
+        if not self._running or self._closed:
+            return
+        if self._socket:
+            self._socket.close()
         self._running = False
         self._closed = True
 
@@ -122,13 +124,7 @@ class XTCPListener(IListener):
 
         :return: XTCPHandle
         """
-        self._event_loop = get_running_loop()
-        sock = socket(self.address_family, SOCK_STREAM)
-        sock.setsockopt(SOL_SOCKET, SO_LINGER, pack("ii", 1, 0))
-        sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        sock.setblocking(False)
-        await self._event_loop.sock_connect(sock, (*self._address,))
-        return XTCPHandle(XTCPSocket(sock))
+        return await XTCPHandle.create(self._address)
 
     async def accept(self) -> XTCPHandle:
         """
@@ -136,8 +132,8 @@ class XTCPListener(IListener):
 
         :return: XTCPHandle
         """
-        if not self._running:
-            raise InvalidOperationException("Listener in not running.")
+        if not self._running or self._closed:
+            raise ListenerClosedException()
         sock, addr = await self._event_loop.sock_accept(self._socket)
         sock.setblocking(False)
         return XTCPHandle(XTCPSocket(sock))

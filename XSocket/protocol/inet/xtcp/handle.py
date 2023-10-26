@@ -27,10 +27,19 @@ class XTCPHandle(IHandle):
 
         :param socket: Socket to handle
         """
-        super().__init__()
         self._socket: XTCPSocket = socket
         self._event_loop: AbstractEventLoop = get_running_loop()
         self._closed: bool = False
+
+    @staticmethod
+    async def create(address: IPAddressInfo) -> "XTCPHandle":
+        """
+        Create a new XTCPHandle with the address info.
+
+        :param address: IPAddressInfo
+        :return: XTCPHandle
+        """
+        return XTCPHandle(await XTCPSocket.create(address))
 
     @property
     def closed(self) -> bool:
@@ -82,7 +91,10 @@ class XTCPHandle(IHandle):
         """
         Closes the Socket connection.
         """
+        if self._closed:
+            return
         await self._close(_close_socket=False)
+        self._closed = True
 
     async def _close(self, _close_socket: bool):
         """

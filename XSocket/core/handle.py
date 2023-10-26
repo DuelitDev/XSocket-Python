@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Generator
 from XSocket.core.net import AddressFamily, AddressInfo
+from XSocket.core.socket import ISocket
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode
 
@@ -13,6 +14,16 @@ class IHandle(metaclass=ABCMeta):
     """
     Provides client connections for network services.
     """
+
+    @staticmethod
+    @abstractmethod
+    async def create(address: AddressInfo) -> "IHandle":
+        """
+        Create a new Handle with the address info.
+
+        :param address: AddressInfo
+        :return: IHandle
+        """
 
     @property
     @abstractmethod

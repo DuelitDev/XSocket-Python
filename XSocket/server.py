@@ -1,123 +1,26 @@
-from asyncio import Task, Lock, create_task, gather
-from pyeventlib import EventHandler, EventArgs
+from asyncio import Lock, Task, create_task, gather
+from pyeventlib import EventHandler
 from XSocket.client import Client
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily, AddressInfo
-from XSocket.exception import *
+from XSocket.events import (OnOpenEventArgs,
+                            OnCloseEventArgs,
+                            OnAcceptEventArgs,
+                            OnErrorEventArgs)
+from XSocket.exception import ServerClosedException
 from XSocket.protocol.protocol import ProtocolType
-from XSocket.util import OPCode
 
 __all__ = [
     "Server"
 ]
 
 
-class OnOpenEventArgs(EventArgs):
-    pass
-
-
-class OnCloseEventArgs(EventArgs):
-    pass
-
-
-class OnAcceptEventArgs(EventArgs):
-    def __init__(self, client: Client):
-        self._client = client
-
-    @property
-    def client(self) -> Client:
-        return self._client
-
-
-class OnErrorEventArgs(EventArgs):
-    def __init__(self, exception: Exception):
-        self._exception = exception
-
-    @property
-    def exception(self) -> Exception:
-        return self._exception
-
-
 class ServerEventWrapper:
     def __init__(self):
-        self._on_open: EventHandler = EventHandler()
-        self._on_close: EventHandler = EventHandler()
-        self._on_accept: EventHandler = EventHandler()
-        self._on_error: EventHandler = EventHandler()
-
-    @property
-    def on_open(self) -> EventHandler:
-        """
-        An event handler that callback when the server is opened.
-
-        :return: EventHandler
-        """
-        return self._on_open
-
-    @property
-    def on_close(self) -> EventHandler:
-        """
-        An event handler that callback when the server is closed.
-
-        :return: EventHandler
-        """
-        return self._on_close
-
-    @property
-    def on_accept(self) -> EventHandler:
-        """
-        This is an event handler that callback
-        when connection with client is established.
-
-        :return: EventHandler
-        """
-        return self._on_accept
-
-    @property
-    def on_error(self) -> EventHandler:
-        """
-        An event handler that callback when error raised.
-
-        :return: EventHandler
-        """
-        return self._on_error
-
-    @on_open.setter
-    def on_open(self, handler: EventHandler):
-        """
-        An event handler that callback when the server is opened.
-
-        :return: EventHandler
-        """
-        self._on_open = handler
-
-    @on_close.setter
-    def on_close(self, handler: EventHandler):
-        """
-        An event handler that callback when the server is closed.
-
-        :return: EventHandler
-        """
-        self._on_close = handler
-
-    @on_accept.setter
-    def on_accept(self, handler: EventHandler):
-        """
-        This is an event handler that callback
-        when connection with client is established.
-
-        :return: EventHandler
-        """
-        self._on_accept = handler
-
-    @on_error.setter
-    def on_error(self, handler: EventHandler):
-        """
-        An event handler that callback when error raised.
-
-        :return: EventHandler
-        """
-        self._on_error = handler
+        self.on_open: EventHandler = EventHandler()
+        self.on_close: EventHandler = EventHandler()
+        self.on_accept: EventHandler = EventHandler()
+        self.on_error: EventHandler = EventHandler()
 
 
 class Server:
@@ -182,14 +85,13 @@ class Server:
 
     async def run(self):
         if self._running or self._closed:
-            raise InvalidOperationException(
-                "Server is already running or closed.")
+            return
         self._running = True
         self._listener.run()
         self._task = create_task(self._wrapper())
 
     async def close(self):
-        if self._closed:
+        if not self._running or self._closed:
             return
         self._closed = True
         await self._task
@@ -217,10 +119,11 @@ class Server:
         async with self._collector_lock:
             del self._clients[id(sender)]
 
-    async def broadcast(self, data: bytes | bytearray,
-                        opcode: OPCode = OPCode.Data):
-        tasks = [client.send(data, opcode) for client in self._clients.values()]
+    async def broadcast(self, data: bytes | bytearray):
+        if not self._running or self._closed:
+            raise ServerClosedException()
+        tasks = [client.send(data) for client in self._clients.values()]
         await gather(*tasks)
 
     async def broadcast_string(self, string: str, encoding: str = "UTF-8"):
-        await self.broadcast(string.encode(encoding), OPCode.Data)
+        await self.broadcast(string.encode(encoding))

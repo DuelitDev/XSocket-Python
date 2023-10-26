@@ -1,9 +1,14 @@
 from asyncio import Task, create_task
-from pyeventlib import EventArgs, EventHandler
+from pyeventlib import EventHandler
 from XSocket.core.handle import IHandle
 from XSocket.core.listener import IListener
 from XSocket.core.net import AddressFamily, AddressInfo
-from XSocket.exception import InvalidOperationException
+from XSocket.events import (OnOpenEventArgs,
+                            OnCloseEventArgs,
+                            OnMessageEventArgs,
+                            OnErrorEventArgs)
+from XSocket.exception import (InvalidOperationException,
+                               ClientClosedException)
 from XSocket.protocol.protocol import ProtocolType
 from XSocket.util import OPCode, OperationControl
 
@@ -12,110 +17,12 @@ __all__ = [
 ]
 
 
-class OnOpenEventArgs(EventArgs):
-    pass
-
-
-class OnCloseEventArgs(EventArgs):
-    pass
-
-
-class OnMessageEventArgs(EventArgs):
-    def __init__(self, data: list[bytearray]):
-        self._data = data
-
-    @property
-    def data(self) -> bytearray:
-        return self._data[0]
-
-
-class OnErrorEventArgs(EventArgs):
-    def __init__(self, exception: Exception):
-        self._exception = exception
-
-    @property
-    def exception(self) -> Exception:
-        return self._exception
-
-
 class ClientEventWrapper:
     def __init__(self):
-        self._on_open: EventHandler = EventHandler()
-        self._on_close: EventHandler = EventHandler()
-        self._on_message: EventHandler = EventHandler()
-        self._on_error: EventHandler = EventHandler()
-
-    @property
-    def on_open(self) -> EventHandler:
-        """
-        An event handler that callback when the client is opened.
-
-        :return: EventHandler
-        """
-        return self._on_open
-
-    @property
-    def on_close(self) -> EventHandler:
-        """
-        An event handler that callback when the client is closed.
-
-        :return: EventHandler
-        """
-        return self._on_close
-
-    @property
-    def on_message(self) -> EventHandler:
-        """
-        An event handler that callback when message received from the client.
-
-        :return: EventHandler
-        """
-        return self._on_message
-
-    @property
-    def on_error(self) -> EventHandler:
-        """
-        An event handler that callback when error raised.
-
-        :return: EventHandler
-        """
-        return self._on_error
-
-    @on_open.setter
-    def on_open(self, handler: EventHandler):
-        """
-        An event handler that callback when the server is opened.
-
-        :return: EventHandler
-        """
-        self._on_open = handler
-
-    @on_close.setter
-    def on_close(self, handler: EventHandler):
-        """
-        An event handler that callback when the server is closed.
-
-        :return: EventHandler
-        """
-        self._on_close = handler
-
-    @on_message.setter
-    def on_message(self, handler: EventHandler):
-        """
-        An event handler that callback when message received from the client.
-
-        :return: EventHandler
-        """
-        self._on_message = handler
-
-    @on_error.setter
-    def on_error(self, handler: EventHandler):
-        """
-        An event handler that callback when error raised.
-
-        :return: EventHandler
-        """
-        self._on_error = handler
+        self.on_open: EventHandler = EventHandler()
+        self.on_close: EventHandler = EventHandler()
+        self.on_message: EventHandler = EventHandler()
+        self.on_error: EventHandler = EventHandler()
 
 
 class Client:
@@ -199,13 +106,12 @@ class Client:
 
     async def run(self):
         if self._running or self._closed:
-            raise InvalidOperationException(
-                "Client is already running or closed.")
+            return
         self._running = True
         self._task = create_task(self._handler())
 
     async def close(self):
-        if self._closed:
+        if not self._running or self._closed:
             return
         await self._handle.close()
         await self._task
@@ -229,8 +135,10 @@ class Client:
                 break
         await self.event.on_close(self, OnCloseEventArgs())
 
-    async def send(self, data: bytes | bytearray, opcode: OPCode = OPCode.Data):
-        await self._handle.send(data, opcode)
+    async def send(self, data: bytes | bytearray):
+        if not self._running or self._closed:
+            raise ClientClosedException()
+        await self._handle.send(data, OPCode.Data)
 
     async def send_string(self, string: str, encoding: str = "UTF-8"):
-        await self.send(string.encode(encoding), OPCode.Data)
+        await self.send(string.encode(encoding))
