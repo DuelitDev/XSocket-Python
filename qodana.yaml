@@ -14,9 +14,10 @@ profile:
 
 #Disable inspections
 exclude:
-  - name: <SomeDisabledInspectionId>
+  - name: All
     paths:
-      - <examples/>
+      - examples/simple_server.py
+      - examples/simple_client.py
 
 #Execute shell command before Qodana execution (Applied in CI/CD pipeline)
 #bootstrap: sh ./prepare-qodana.sh
