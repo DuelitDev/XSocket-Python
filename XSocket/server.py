@@ -81,9 +81,17 @@ class Server:
 
     @property
     def event(self) -> ServerEventWrapper:
+        """
+        Represents the method that will handle an events.
+
+        :return: ServerEventWrapper
+        """
         return self._event
 
     async def run(self):
+        """
+        Starts listening for incoming connection requests.
+        """
         if self._running or self._closed:
             return
         self._running = True
@@ -91,6 +99,9 @@ class Server:
         self._task = create_task(self._wrapper())
 
     async def close(self):
+        """
+        Close all client connections and server.
+        """
         if not self._running or self._closed:
             return
         self._closed = True
@@ -120,10 +131,21 @@ class Server:
             del self._clients[id(sender)]
 
     async def broadcast(self, data: bytes | bytearray):
+        """
+        Send data to all clients.
+
+        :param data: Data to send
+        """
         if not self._running or self._closed:
             raise ServerClosedException()
         tasks = [client.send(data) for client in self._clients.values()]
         await gather(*tasks)
 
     async def broadcast_string(self, string: str, encoding: str = "UTF-8"):
+        """
+        Send string to all clients.
+
+        :param string: String to send
+        :param encoding: String encoding
+        """
         await self.broadcast(string.encode(encoding))

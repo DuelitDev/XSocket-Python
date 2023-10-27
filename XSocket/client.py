@@ -102,15 +102,26 @@ class Client:
 
     @property
     def event(self) -> ClientEventWrapper:
+        """
+        Represents the method that will handle an events.
+
+        :return: ClientEventWrapper
+        """
         return self._event
 
     async def run(self):
+        """
+        Establishes a connection to a remote host.
+        """
         if self._running or self._closed:
             return
         self._running = True
         self._task = create_task(self._handler())
 
     async def close(self):
+        """
+        Close the connection.
+        """
         if not self._running or self._closed:
             return
         await self._handle.close()
@@ -136,9 +147,20 @@ class Client:
         await self.event.on_close(self, OnCloseEventArgs())
 
     async def send(self, data: bytes | bytearray):
+        """
+        Send data to server.
+
+        :param data: Data to send
+        """
         if not self._running or self._closed:
             raise ClientClosedException()
         await self._handle.send(data, OPCode.Data)
 
     async def send_string(self, string: str, encoding: str = "UTF-8"):
+        """
+        Send string to server.
+
+        :param string: String to send
+        :param encoding: String encoding
+        """
         await self.send(string.encode(encoding))
