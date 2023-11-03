@@ -18,6 +18,9 @@ __all__ = [
 
 
 class ClientEventWrapper:
+    """
+    Represents the method that will handle an events.
+    """
     def __init__(self):
         self.on_open: EventHandler = EventHandler()
         self.on_close: EventHandler = EventHandler()
@@ -26,6 +29,9 @@ class ClientEventWrapper:
 
 
 class Client:
+    """
+    Provides client connections for network services.
+    """
     def __init__(self, initializer: IListener | IHandle):
         self._listener: IListener | None = None
         self._handle: IHandle | None = None

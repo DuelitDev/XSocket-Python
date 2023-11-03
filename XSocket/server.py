@@ -16,6 +16,9 @@ __all__ = [
 
 
 class ServerEventWrapper:
+    """
+    Represents the method that will handle an events.
+    """
     def __init__(self):
         self.on_open: EventHandler = EventHandler()
         self.on_close: EventHandler = EventHandler()
