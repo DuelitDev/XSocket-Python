@@ -31,16 +31,6 @@ class XTCPHandle(IHandle):
         self._event_loop: AbstractEventLoop = get_running_loop()
         self._closed: bool = False
 
-    @staticmethod
-    async def create(address: IPAddressInfo) -> "XTCPHandle":
-        """
-        Create a new XTCPHandle with the address info.
-
-        :param address: IPAddressInfo
-        :return: XTCPHandle
-        """
-        return XTCPHandle(await XTCPSocket.create(address))
-
     @property
     def closed(self) -> bool:
         """
@@ -87,6 +77,16 @@ class XTCPHandle(IHandle):
         """
         return ProtocolType.Xtcp
 
+    @staticmethod
+    async def create(address: IPAddressInfo) -> "XTCPHandle":
+        """
+        Create a new XTCPHandle with the IP address info.
+
+        :param address: IPAddressInfo
+        :return: XTCPHandle
+        """
+        return XTCPHandle(await XTCPSocket.create(address))
+
     async def close(self):
         """
         Closes the Socket connection.
@@ -106,7 +106,6 @@ class XTCPHandle(IHandle):
             self._socket.close()
             return
         await self.send(bytearray(), OPCode.ConnectionClose)
-        self._closed = True
 
     @staticmethod
     def pack(data: bytearray, opcode: OPCode) -> Generator[bytearray, Any, Any]:

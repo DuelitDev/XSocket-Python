@@ -22,22 +22,6 @@ class XTCPSocket(ISocket):
         self._event_loop: AbstractEventLoop = get_running_loop()
         self._closed: bool = False
 
-    @staticmethod
-    async def create(address: IPAddressInfo) -> "XTCPSocket":
-        """
-        Create a new XTCPSocket with the address info.
-
-        :param address: IPAddressInfo
-        :return: XTCPSocket
-        """
-        loop = get_running_loop()
-        sock = socket(address.address_family, SOCK_STREAM)
-        sock.setsockopt(SOL_SOCKET, SO_LINGER, pack("ii", 1, 0))
-        sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        sock.setblocking(False)
-        await loop.sock_connect(sock, (*address,))
-        return XTCPSocket(sock)
-
     @property
     def closed(self) -> bool:
         """
@@ -76,6 +60,22 @@ class XTCPSocket(ISocket):
         :return: IPAddressInfo
         """
         return self._remote_address
+
+    @staticmethod
+    async def create(address: IPAddressInfo) -> "XTCPSocket":
+        """
+        Create a new XTCPSocket with the IP address info.
+
+        :param address: IPAddressInfo
+        :return: XTCPSocket
+        """
+        loop = get_running_loop()
+        sock = socket(address.address_family, SOCK_STREAM)
+        sock.setsockopt(SOL_SOCKET, SO_LINGER, pack("ii", 1, 0))
+        sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        sock.setblocking(False)
+        await loop.sock_connect(sock, (*address,))
+        return XTCPSocket(sock)
 
     def close(self):
         """

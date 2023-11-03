@@ -14,16 +14,6 @@ class IHandle(metaclass=ABCMeta):
     Provides client connections for network services.
     """
 
-    @staticmethod
-    @abstractmethod
-    async def create(address: AddressInfo) -> "IHandle":
-        """
-        Create a new Handle with the address info.
-
-        :param address: AddressInfo
-        :return: IHandle
-        """
-
     @property
     @abstractmethod
     def closed(self) -> bool:
@@ -68,6 +58,16 @@ class IHandle(metaclass=ABCMeta):
         Gets the protocol type of the Handle.
 
         :return: ProtocolType
+        """
+
+    @staticmethod
+    @abstractmethod
+    async def create(address: AddressInfo) -> "IHandle":
+        """
+        Create a new Handle with the address info.
+
+        :param address: AddressInfo
+        :return: IHandle
         """
 
     @abstractmethod

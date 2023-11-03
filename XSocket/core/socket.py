@@ -12,16 +12,6 @@ class ISocket(metaclass=ABCMeta):
     Implements sockets interface.
     """
 
-    @staticmethod
-    @abstractmethod
-    async def create(address: AddressInfo) -> "ISocket":
-        """
-        Create a new Socket with the address info.
-
-        :param address: AddressInfo
-        :return: ISocket
-        """
-
     @property
     @abstractmethod
     def closed(self) -> bool:
@@ -57,6 +47,16 @@ class ISocket(metaclass=ABCMeta):
         Gets the remote address info.
 
         :return: AddressInfo
+        """
+
+    @staticmethod
+    @abstractmethod
+    async def create(address: AddressInfo) -> "ISocket":
+        """
+        Create a new Socket with the address info.
+
+        :param address: AddressInfo
+        :return: ISocket
         """
 
     @abstractmethod
